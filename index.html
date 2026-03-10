@@ -41,8 +41,18 @@
       box-shadow: var(--shadow);
     }
 
-    header h1 { font-size: 1.25rem; font-weight: 700; letter-spacing: -.3px; }
-    header span.subtitle { color: var(--muted); font-size: .875rem; }
+    header h1 {
+      font-size: 1.25rem;
+      font-weight: 700;
+      letter-spacing: -.3px;
+      color: #00AEEF;
+    }
+
+    header span.subtitle {
+      color: var(--muted);
+      font-size: .875rem;
+    }
+
     header .spacer { flex: 1; }
 
     .btn {
@@ -73,7 +83,11 @@
       height: calc(100vh - 57px);
     }
 
-    .panel { overflow-y: auto; padding: 24px; }
+    .panel {
+      overflow-y: auto;
+      padding: 24px;
+    }
+
     .panel-form { border-right: 1px solid var(--border); }
 
     .section {
@@ -110,7 +124,10 @@
       letter-spacing: .04em;
     }
 
-    input[type="text"], input[type="date"], textarea, select {
+    input[type="text"],
+    input[type="date"],
+    textarea,
+    select {
       width: 100%;
       padding: 8px 12px;
       border: 1px solid var(--border);
@@ -130,7 +147,9 @@
     }
 
     textarea { resize: vertical; min-height: 80px; }
+
     .field { margin-bottom: 14px; }
+
     .row { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
 
     .note-item, .action-item, .decision-item {
@@ -157,6 +176,8 @@
       border-radius: 99px;
     }
 
+    .bullet-list { }
+
     .bullet-row {
       display: flex;
       gap: 8px;
@@ -164,7 +185,10 @@
       align-items: flex-start;
     }
 
-    .bullet-row textarea { flex: 1; min-height: 40px; }
+    .bullet-row textarea {
+      flex: 1;
+      min-height: 40px;
+    }
 
     .add-btn {
       display: flex;
@@ -181,8 +205,13 @@
       transition: all .15s;
     }
 
-    .add-btn:hover { border-color: var(--accent); color: var(--accent); background: rgba(37,99,235,.04); }
+    .add-btn:hover {
+      border-color: var(--accent);
+      color: var(--accent);
+      background: rgba(37,99,235,.04);
+    }
 
+    /* Preview panel */
     .panel-preview { background: #1e1e2e; }
 
     .preview-header {
@@ -214,7 +243,12 @@
       border: 1px solid #313244;
     }
 
-    .ref-preview { font-size: .75rem; color: #a6adc8; margin-bottom: 10px; font-family: monospace; }
+    .ref-preview {
+      font-size: .75rem;
+      color: #a6adc8;
+      margin-bottom: 10px;
+      font-family: monospace;
+    }
 
     .toast {
       position: fixed;
@@ -253,15 +287,20 @@
       <polyline points="7 10 12 15 17 10"/>
       <line x1="12" y1="15" x2="12" y2="3"/>
     </svg>
-    Download .md
+    Download .txt
   </button>
 </header>
 
 <div class="layout">
 
+  <!-- LEFT: Form -->
   <div class="panel panel-form" id="form-panel">
+
+    <!-- Meta -->
     <div class="section">
-      <div class="section-header"><span class="section-title">Meeting Info</span></div>
+      <div class="section-header">
+        <span class="section-title">Meeting Info</span>
+      </div>
       <div class="row">
         <div class="field">
           <label>Project ID</label>
@@ -280,8 +319,14 @@
         <label>Date</label>
         <input type="date" id="meeting-date" oninput="updatePreview()" />
       </div>
+      <div class="section-header" style="margin-top:14px;margin-bottom:8px;">
+        <span class="section-title" style="font-size:.8rem;">Deelnemers</span>
+        <button class="btn btn-secondary btn-small" onclick="addParticipant()">+ Add Participant</button>
+      </div>
+      <div id="participants-container"></div>
     </div>
 
+    <!-- Notes / Agenda Items -->
     <div class="section">
       <div class="section-header">
         <span class="section-title">Notes</span>
@@ -290,6 +335,7 @@
       <div id="notes-container"></div>
     </div>
 
+    <!-- Decisions -->
     <div class="section">
       <div class="section-header">
         <span class="section-title">Decisions</span>
@@ -298,6 +344,7 @@
       <div id="decisions-container"></div>
     </div>
 
+    <!-- Action Points -->
     <div class="section">
       <div class="section-header">
         <span class="section-title">Action Points</span>
@@ -305,8 +352,10 @@
       </div>
       <div id="actions-container"></div>
     </div>
+
   </div>
 
+  <!-- RIGHT: Preview -->
   <div class="panel panel-preview">
     <div class="preview-header">
       <span class="preview-title">Markdown Preview</span>
@@ -327,18 +376,55 @@
 <div class="toast" id="toast"></div>
 
 <script>
-  let notes = [];
-  let decisions = [];
-  let actions = [];
+  // ─── State ────────────────────────────────────────────────────────────────
+  let notes = [];        // [{ subject, bullets: [string] }]
+  let decisions = [];    // [string]
+  let actions = [];      // [{ text, assignee }]
+  let participants = []; // [string]
 
+  // ─── Init ─────────────────────────────────────────────────────────────────
   document.addEventListener('DOMContentLoaded', () => {
+    // Set today's date
     document.getElementById('meeting-date').value = new Date().toISOString().split('T')[0];
+    // Start with one note topic
+    addParticipant();
     addNote();
     addDecision();
     addAction();
     updatePreview();
   });
 
+  // ─── Participants ─────────────────────────────────────────────────────────
+  function addParticipant() {
+    participants.push('');
+    renderParticipants();
+    updatePreview();
+  }
+
+  function removeParticipant(idx) {
+    participants.splice(idx, 1);
+    renderParticipants();
+    updatePreview();
+  }
+
+  function renderParticipants() {
+    const container = document.getElementById('participants-container');
+    container.innerHTML = '';
+    participants.forEach((p, i) => {
+      const div = document.createElement('div');
+      div.className = 'decision-item';
+      div.innerHTML = `
+        <div class="bullet-row">
+          <input type="text" value="${escAttr(p)}" placeholder="Name…"
+            oninput="participants[${i}]=this.value;updatePreview()" />
+          <button class="btn btn-danger btn-small" onclick="removeParticipant(${i})" style="margin-top:2px">✕</button>
+        </div>
+      `;
+      container.appendChild(div);
+    });
+  }
+
+  // ─── Notes ────────────────────────────────────────────────────────────────
   function addNote() {
     const id = Date.now();
     notes.push({ id, subject: '', bullets: [''] });
@@ -402,6 +488,7 @@
     });
   }
 
+  // ─── Decisions ────────────────────────────────────────────────────────────
   function addDecision() {
     decisions.push('');
     renderDecisions();
@@ -432,6 +519,7 @@
     });
   }
 
+  // ─── Actions ──────────────────────────────────────────────────────────────
   function addAction() {
     actions.push({ text: '', assignee: '' });
     renderActions();
@@ -471,54 +559,125 @@
     });
   }
 
+  // ─── Markdown generation ──────────────────────────────────────────────────
   function buildReference() {
     const date = document.getElementById('meeting-date').value || '';
     const projectId = document.getElementById('project-id').value.trim();
     const docType = document.getElementById('doc-type').value.trim() || 'MOM';
     const subject = document.getElementById('subject').value.trim();
+
     const datePart = date ? date.replace(/-/g, '') : 'YYYYMMDD';
     const projPart = projectId || '[Project ID]';
+    const docPart = docType;
     const subPart = subject ? subject.replace(/\s+/g, '-') : '[Subject]';
-    return `${datePart}_${projPart}_${docType}_${subPart}`;
+
+    return `${datePart}_${projPart}_${docPart}_${subPart}`;
   }
 
   function buildMarkdown(isTemplate = false) {
     if (isTemplate) {
-      return `# [Subject]\n\n## Date\n\n- [Actual Date]\n\n## Content\n\n[Table of Contents]\n\n# Notes\n\n## [Topic Heading]\n\n- Bullet points with text\n\n# Follow-Up\n\n## Decisions\n\n- [Decision 1]\n\n## Action Points\n\n- [Action description] - [AssigneeName]\n`;
+      return `[Subject]
+
+DATE
+
+  [Actual Date]
+
+DEELNEMERS
+
+  - [Name]
+
+CONTENT
+
+  - [Topic Heading]
+
+NOTES
+
+  [Topic Heading]
+
+  - Bullet points with text
+
+FOLLOW-UP
+
+  Decisions
+
+  - [Decision 1]
+
+  Action Points
+
+  - [Action description] - [AssigneeName]
+`;
     }
 
     const date = document.getElementById('meeting-date').value;
     const subject = document.getElementById('subject').value.trim();
+
     const displayDate = date
       ? new Date(date + 'T00:00:00').toLocaleDateString('en-GB', { day: '2-digit', month: 'long', year: 'numeric' })
       : '[Date]';
 
-    let md = `# ${subject || '[Subject]'}\n\n## Date\n\n- ${displayDate}\n\n## Content\n\n`;
+    let md = '';
 
-    if (notes.length > 0) {
-      notes.forEach((note, i) => { md += `${i + 1}. [${note.subject || `Topic ${i+1}`}](#${slugify(note.subject || `topic-${i+1}`)})\n`; });
+    md += `${subject || '[Subject]'}\n\n`;
+    md += `DATE\n\n`;
+    md += `  ${displayDate}\n\n`;
+
+    md += `DEELNEMERS\n\n`;
+    const filledParticipants = participants.filter(p => p.trim());
+    if (filledParticipants.length > 0) {
+      filledParticipants.forEach(p => { md += `  - ${p.trim()}\n`; });
     } else {
-      md += `[Table of Contents]\n`;
+      md += `  - \n`;
+    }
+    md += '\n';
+
+    md += `CONTENT\n\n`;
+
+    // Table of Contents
+    if (notes.length > 0) {
+      notes.forEach((note, i) => {
+        const heading = note.subject || `Topic ${i + 1}`;
+        md += `  - ${heading}\n`;
+      });
+    } else {
+      md += `  [Table of Contents]\n`;
     }
 
-    md += `\n# Notes\n\n`;
-    notes.forEach((note) => {
-      md += `## ${note.subject || 'Topic'}\n\n`;
-      const filled = note.bullets.filter(b => b.trim());
-      (filled.length ? filled : ['']).forEach(b => { md += `- ${b.trim()}\n`; });
-      md += '\n';
-    });
+    md += `\nNOTES\n\n`;
 
-    md += `\n# Follow-Up\n\n## Decisions\n\n`;
-    const filledD = decisions.filter(d => d.trim());
-    (filledD.length ? filledD : ['']).forEach(d => { md += `- ${d.trim()}\n`; });
+    if (notes.length > 0) {
+      notes.forEach((note) => {
+        const heading = note.subject || 'Topic';
+        md += `  ${heading}\n\n`;
+        const filledBullets = note.bullets.filter(b => b.trim());
+        if (filledBullets.length > 0) {
+          filledBullets.forEach(b => { md += `  - ${b.trim()}\n`; });
+        } else {
+          md += `  - \n`;
+        }
+        md += '\n';
+      });
+    }
 
-    md += `\n## Action Points\n\n`;
-    const filledA = actions.filter(a => a.text.trim());
-    (filledA.length ? filledA : ['']).forEach(a => {
-      const assignee = a.assignee && a.assignee.trim() ? ` - ${a.assignee.trim()}` : '';
-      md += `- ${a.text.trim()}${assignee}\n`;
-    });
+    md += `\nFOLLOW-UP\n\n`;
+
+    md += `  Decisions\n\n`;
+    const filledDecisions = decisions.filter(d => d.trim());
+    if (filledDecisions.length > 0) {
+      filledDecisions.forEach(d => { md += `  - ${d.trim()}\n`; });
+    } else {
+      md += `  - \n`;
+    }
+
+    md += `\n  Action Points\n\n`;
+    const filledActions = actions.filter(a => a.text.trim());
+    if (filledActions.length > 0) {
+      filledActions.forEach(a => {
+        const assignee = a.assignee.trim() ? ` - ${a.assignee.trim()}` : '';
+        md += `  - ${a.text.trim()}${assignee}\n`;
+      });
+    } else {
+      md += `  - \n`;
+    }
 
     return md;
   }
@@ -528,33 +687,46 @@
   }
 
   function hasData() {
-    return document.getElementById('subject').value.trim() ||
-           document.getElementById('project-id').value.trim() ||
-           notes.some(n => n.subject.trim() || n.bullets.some(b => b.trim())) ||
-           decisions.some(d => d.trim()) ||
-           actions.some(a => a.text.trim());
+    const subject = document.getElementById('subject').value.trim();
+    const projectId = document.getElementById('project-id').value.trim();
+    const hasNoteContent = notes.some(n => n.subject.trim() || n.bullets.some(b => b.trim()));
+    const hasDecisions = decisions.some(d => d.trim());
+    const hasActions = actions.some(a => a.text.trim());
+    return subject || projectId || hasNoteContent || hasDecisions || hasActions;
   }
 
+  // ─── Preview ──────────────────────────────────────────────────────────────
   function updatePreview() {
-    document.getElementById('ref-preview').textContent = 'Reference: ' + buildReference();
-    document.getElementById('preview-output').textContent = buildMarkdown(false);
+    const ref = buildReference();
+    document.getElementById('ref-preview').textContent = 'Reference: ' + ref;
+    const md = buildMarkdown(false);
+    document.getElementById('preview-output').textContent = md;
   }
 
+  // ─── Actions ──────────────────────────────────────────────────────────────
   function downloadMD() {
     const useTemplate = !hasData();
     const md = buildMarkdown(useTemplate);
-    const filename = (useTemplate ? 'YYYYMMDD_ProjectID_MOM_Subject' : buildReference()) + '.md';
-    const blob = new Blob([md], { type: 'text/markdown;charset=utf-8' });
+    const ref = buildReference();
+    const filename = (useTemplate ? 'YYYYMMDD_ProjectID_MOM_Subject' : ref) + '.txt';
+
+    const blob = new Blob([md], { type: 'text/plain;charset=utf-8' });
     const url = URL.createObjectURL(blob);
     const a = document.createElement('a');
-    a.href = url; a.download = filename; a.click();
+    a.href = url;
+    a.download = filename;
+    a.click();
     URL.revokeObjectURL(url);
+
     showToast(useTemplate ? 'Template downloaded!' : 'Downloaded: ' + filename);
   }
 
   function copyToClipboard() {
     const text = document.getElementById('preview-output').textContent;
-    navigator.clipboard.writeText(text).then(() => showToast('Copied to clipboard!')).catch(() => {
+    navigator.clipboard.writeText(text).then(() => {
+      showToast('Copied to clipboard!');
+    }).catch(() => {
+      // Fallback
       const ta = document.createElement('textarea');
       ta.value = text;
       document.body.appendChild(ta);
@@ -571,8 +743,14 @@
       document.getElementById('doc-type').value = 'MOM';
       document.getElementById('subject').value = '';
       document.getElementById('meeting-date').value = new Date().toISOString().split('T')[0];
-      notes = []; decisions = []; actions = [];
-      addNote(); addDecision(); addAction();
+      notes = [];
+      decisions = [];
+      actions = [];
+      participants = [];
+      addParticipant();
+      addNote();
+      addDecision();
+      addAction();
       updatePreview();
     }
   }
@@ -584,9 +762,18 @@
     setTimeout(() => t.classList.remove('show'), 2500);
   }
 
-  function autoResize(el) { el.style.height = 'auto'; el.style.height = el.scrollHeight + 'px'; }
-  function escHtml(str) { return str.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
-  function escAttr(str) { return str.replace(/"/g,'&quot;').replace(/'/g,'&#39;'); }
+  function autoResize(el) {
+    el.style.height = 'auto';
+    el.style.height = el.scrollHeight + 'px';
+  }
+
+  function escHtml(str) {
+    return str.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+  }
+
+  function escAttr(str) {
+    return str.replace(/"/g, '&quot;').replace(/'/g, '&#39;');
+  }
 </script>
 </body>
 </html>
