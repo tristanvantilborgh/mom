@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="nl">
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
@@ -45,7 +45,7 @@
       font-size: 1.25rem;
       font-weight: 700;
       letter-spacing: -.3px;
-      color: #00AEEF;
+      color: var(--accent);
     }
 
     header span.subtitle {
@@ -54,6 +54,37 @@
     }
 
     header .spacer { flex: 1; }
+
+    .lang-group {
+      display: inline-flex;
+      gap: 4px;
+      margin-right: 8px;
+    }
+
+    .lang-btn {
+      display: inline-block;
+      padding: 5px 10px;
+      border-radius: var(--radius);
+      border: 1px solid var(--border);
+      background-color: transparent;
+      font-size: .75rem;
+      font-weight: 700;
+      cursor: pointer;
+      color: var(--muted);
+      transition: all .15s;
+      line-height: 1;
+    }
+
+    .lang-btn:hover {
+      border-color: var(--accent);
+      color: var(--accent);
+    }
+
+    .lang-btn.active {
+      background-color: var(--accent);
+      color: #ffffff;
+      border-color: var(--accent);
+    }
 
     .btn {
       display: inline-flex;
@@ -278,16 +309,21 @@
 
 <header>
   <h1>MOM</h1>
-  <span class="subtitle">Minutes of Meeting</span>
+  <span class="subtitle" id="ui-subtitle">Notulen van Vergadering</span>
   <div class="spacer"></div>
-  <button class="btn btn-secondary" onclick="resetForm()">Reset</button>
-  <button class="btn btn-primary" onclick="downloadMD()" style="margin-left:8px">
+  <div class="lang-group">
+    <button type="button" class="lang-btn active" data-lang="NL" onclick="setLang('NL')">NL</button>
+    <button type="button" class="lang-btn" data-lang="FR" onclick="setLang('FR')">FR</button>
+    <button type="button" class="lang-btn" data-lang="EN" onclick="setLang('EN')">EN</button>
+  </div>
+  <button type="button" class="btn btn-secondary" id="btn-reset" onclick="resetForm()">Reset</button>
+  <button type="button" class="btn btn-primary" id="btn-download" onclick="downloadMD()" style="margin-left:8px">
     <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
       <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
       <polyline points="7 10 12 15 17 10"/>
       <line x1="12" y1="15" x2="12" y2="3"/>
     </svg>
-    Download .txt
+    <span id="btn-download-text">Download .txt</span>
   </button>
 </header>
 
@@ -299,29 +335,29 @@
     <!-- Meta -->
     <div class="section">
       <div class="section-header">
-        <span class="section-title">Meeting Info</span>
+        <span class="section-title" id="ui-meeting-info">Vergaderinfo</span>
       </div>
       <div class="row">
         <div class="field">
-          <label>Project ID</label>
-          <input type="text" id="project-id" placeholder="e.g. PROJ-01" oninput="updatePreview()" />
+          <label id="lbl-project-id">Project ID</label>
+          <input type="text" id="project-id" placeholder="bijv. PR-01" oninput="updatePreview()" />
         </div>
         <div class="field">
-          <label>Doc Type</label>
+          <label id="lbl-doc-type">Doc Type</label>
           <input type="text" id="doc-type" placeholder="e.g. MOM" value="MOM" oninput="updatePreview()" />
         </div>
       </div>
       <div class="field">
-        <label>Subject</label>
-        <input type="text" id="subject" placeholder="e.g. Kick-off Meeting" oninput="updatePreview()" />
+        <label id="lbl-subject">Onderwerp</label>
+        <input type="text" id="subject" placeholder="bijv. Kick-off Vergadering" oninput="updatePreview()" />
       </div>
       <div class="field">
-        <label>Date</label>
+        <label id="lbl-date">Datum</label>
         <input type="date" id="meeting-date" oninput="updatePreview()" />
       </div>
       <div class="section-header" style="margin-top:14px;margin-bottom:8px;">
-        <span class="section-title" style="font-size:.8rem;">Deelnemers</span>
-        <button class="btn btn-secondary btn-small" onclick="addParticipant()">+ Add Participant</button>
+        <span class="section-title" id="ui-participants-title" style="font-size:.8rem;">PARTICIPANTS</span>
+        <button type="button" class="btn btn-secondary btn-small" id="btn-add-participant" onclick="addParticipant()">+ Deelnemer toevoegen</button>
       </div>
       <div id="participants-container"></div>
     </div>
@@ -329,8 +365,8 @@
     <!-- Notes / Agenda Items -->
     <div class="section">
       <div class="section-header">
-        <span class="section-title">Notes</span>
-        <button class="btn btn-secondary btn-small" onclick="addNote()">+ Add Topic</button>
+        <span class="section-title" id="ui-notes-title">Notities</span>
+        <button type="button" class="btn btn-secondary btn-small" id="btn-add-note" onclick="addNote()">+ Onderwerp toevoegen</button>
       </div>
       <div id="notes-container"></div>
     </div>
@@ -338,8 +374,8 @@
     <!-- Decisions -->
     <div class="section">
       <div class="section-header">
-        <span class="section-title">Decisions</span>
-        <button class="btn btn-secondary btn-small" onclick="addDecision()">+ Add</button>
+        <span class="section-title" id="ui-decisions-title">Beslissingen</span>
+        <button type="button" class="btn btn-secondary btn-small" id="btn-add-decision" onclick="addDecision()">+ Toevoegen</button>
       </div>
       <div id="decisions-container"></div>
     </div>
@@ -347,8 +383,8 @@
     <!-- Action Points -->
     <div class="section">
       <div class="section-header">
-        <span class="section-title">Action Points</span>
-        <button class="btn btn-secondary btn-small" onclick="addAction()">+ Add</button>
+        <span class="section-title" id="ui-actions-title">Actiepunten</span>
+        <button type="button" class="btn btn-secondary btn-small" id="btn-add-action" onclick="addAction()">+ Toevoegen</button>
       </div>
       <div id="actions-container"></div>
     </div>
@@ -358,13 +394,13 @@
   <!-- RIGHT: Preview -->
   <div class="panel panel-preview">
     <div class="preview-header">
-      <span class="preview-title">Markdown Preview</span>
-      <button class="btn btn-secondary btn-small" onclick="copyToClipboard()" style="background:#313244;color:#cdd6f4;border:1px solid #45475a;">
+      <span class="preview-title" id="ui-preview-title">Markdown Preview</span>
+      <button type="button" class="btn btn-secondary btn-small" onclick="copyToClipboard()" style="background:#313244;color:#cdd6f4;border:1px solid #45475a;">
         <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
           <rect x="9" y="9" width="13" height="13" rx="2" ry="2"/>
           <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/>
         </svg>
-        Copy
+        <span id="btn-copy-text">Kopieer</span>
       </button>
     </div>
     <div class="ref-preview" id="ref-preview"></div>
@@ -376,29 +412,219 @@
 <div class="toast" id="toast"></div>
 
 <script>
-  // ─── State ────────────────────────────────────────────────────────────────
-  let notes = [];        // [{ subject, bullets: [string] }]
-  let decisions = [];    // [string]
-  let actions = [];      // [{ text, assignee }]
-  let participants = []; // [string]
+  var translations = {
+    NL: {
+      subtitle: 'Notulen van Vergadering',
+      meetingInfo: 'Vergaderinfo',
+      projectId: 'Project ID',
+      docType: 'Doc Type',
+      subject: 'Onderwerp',
+      date: 'Datum',
+      participants: 'PARTICIPANTS',
+      addParticipant: '+ Deelnemer toevoegen',
+      notes: 'Notities',
+      addTopic: '+ Onderwerp toevoegen',
+      decisions: 'Beslissingen',
+      add: '+ Toevoegen',
+      actionPoints: 'Actiepunten',
+      reset: 'Reset',
+      download: 'Download .txt',
+      previewTitle: 'Markdown Preview',
+      copy: 'Kopieer',
+      subjectHeading: 'Onderwerp / Titel',
+      bulletPoints: 'Bullet Points',
+      action: 'Actie',
+      assignee: 'Verantwoordelijke',
+      topicLabel: 'Onderwerp',
+      actionLabel: 'Actie',
+      remove: 'Verwijder',
+      addBullet: '+ bullet',
+      phProjectId: 'bijv. PR-01',
+      phSubject: 'bijv. Kick-off Vergadering',
+      phParticipant: 'Naam\u2026',
+      phNote: 'Notitie\u2026',
+      phDecision: 'Beslissing\u2026',
+      phAction: 'Beschrijf de actie\u2026',
+      phAssignee: 'Naam',
+      confirmReset: 'Alle velden resetten?',
+      toastTemplate: 'Sjabloon gedownload!',
+      toastDownloaded: 'Gedownload: ',
+      toastCopied: 'Gekopieerd naar klembord!',
+      refLabel: 'Referentie: ',
+      mdDate: 'DATUM',
+      mdParticipants: 'DEELNEMERS',
+      mdContent: 'INHOUD',
+      mdNotes: 'NOTITIES',
+      mdFollowUp: 'OPVOLGING',
+      mdDecisions: 'Beslissingen',
+      mdActionPoints: 'Actiepunten'
+    },
+    FR: {
+      subtitle: 'Compte Rendu de R\u00e9union',
+      meetingInfo: 'Info R\u00e9union',
+      projectId: 'ID Projet',
+      docType: 'Type Doc',
+      subject: 'Sujet',
+      date: 'Date',
+      participants: 'PARTICIPANTS',
+      addParticipant: '+ Ajouter Participant',
+      notes: 'Notes',
+      addTopic: '+ Ajouter Sujet',
+      decisions: 'D\u00e9cisions',
+      add: '+ Ajouter',
+      actionPoints: "Points d'Action",
+      reset: 'R\u00e9initialiser',
+      download: 'T\u00e9l\u00e9charger .txt',
+      previewTitle: 'Aper\u00e7u Markdown',
+      copy: 'Copier',
+      subjectHeading: 'Sujet / Titre',
+      bulletPoints: 'Points',
+      action: 'Action',
+      assignee: 'Responsable',
+      topicLabel: 'Sujet',
+      actionLabel: 'Action',
+      remove: 'Supprimer',
+      addBullet: '+ point',
+      phProjectId: 'ex. PR-01',
+      phSubject: 'ex. R\u00e9union de Lancement',
+      phParticipant: 'Nom\u2026',
+      phNote: 'Note\u2026',
+      phDecision: 'D\u00e9cision\u2026',
+      phAction: "D\u00e9crire l'action\u2026",
+      phAssignee: 'Nom',
+      confirmReset: 'R\u00e9initialiser tous les champs?',
+      toastTemplate: 'Mod\u00e8le t\u00e9l\u00e9charg\u00e9!',
+      toastDownloaded: 'T\u00e9l\u00e9charg\u00e9: ',
+      toastCopied: 'Copi\u00e9 dans le presse-papiers!',
+      refLabel: 'R\u00e9f\u00e9rence: ',
+      mdDate: 'DATE',
+      mdParticipants: 'PARTICIPANTS',
+      mdContent: 'CONTENU',
+      mdNotes: 'NOTES',
+      mdFollowUp: 'SUIVI',
+      mdDecisions: 'D\u00e9cisions',
+      mdActionPoints: "Points d'Action"
+    },
+    EN: {
+      subtitle: 'Minutes of Meeting',
+      meetingInfo: 'Meeting Info',
+      projectId: 'Project ID',
+      docType: 'Doc Type',
+      subject: 'Subject',
+      date: 'Date',
+      participants: 'PARTICIPANTS',
+      addParticipant: '+ Add Participant',
+      notes: 'Notes',
+      addTopic: '+ Add Topic',
+      decisions: 'Decisions',
+      add: '+ Add',
+      actionPoints: 'Action Points',
+      reset: 'Reset',
+      download: 'Download .txt',
+      previewTitle: 'Markdown Preview',
+      copy: 'Copy',
+      subjectHeading: 'Subject / Heading',
+      bulletPoints: 'Bullet Points',
+      action: 'Action',
+      assignee: 'Assignee',
+      topicLabel: 'Topic',
+      actionLabel: 'Action',
+      remove: 'Remove',
+      addBullet: '+ bullet',
+      phProjectId: 'e.g. PR-01',
+      phSubject: 'e.g. Kick-off Meeting',
+      phParticipant: 'Name\u2026',
+      phNote: 'Note\u2026',
+      phDecision: 'Decision\u2026',
+      phAction: 'Describe the action\u2026',
+      phAssignee: 'Name',
+      confirmReset: 'Reset all fields?',
+      toastTemplate: 'Template downloaded!',
+      toastDownloaded: 'Downloaded: ',
+      toastCopied: 'Copied to clipboard!',
+      refLabel: 'Reference: ',
+      mdDate: 'DATE',
+      mdParticipants: 'PARTICIPANTS',
+      mdContent: 'CONTENT',
+      mdNotes: 'NOTES',
+      mdFollowUp: 'FOLLOW-UP',
+      mdDecisions: 'Decisions',
+      mdActionPoints: 'Action Points'
+    }
+  };
 
-  // ─── Init ─────────────────────────────────────────────────────────────────
-  document.addEventListener('DOMContentLoaded', () => {
-    // Set today's date
+  var currentLang = 'NL';
+
+  function t(key) {
+    return translations[currentLang][key] || translations['EN'][key] || key;
+  }
+
+  function setLang(lang) {
+    currentLang = lang;
+    var btns = document.querySelectorAll('.lang-btn');
+    for (var i = 0; i < btns.length; i++) {
+      if (btns[i].getAttribute('data-lang') === lang) {
+        btns[i].className = 'lang-btn active';
+      } else {
+        btns[i].className = 'lang-btn';
+      }
+    }
+    applyLang();
+  }
+
+  function applyLang() {
+    document.getElementById('ui-subtitle').textContent = t('subtitle');
+    document.getElementById('ui-meeting-info').textContent = t('meetingInfo');
+    document.getElementById('lbl-project-id').textContent = t('projectId');
+    document.getElementById('lbl-doc-type').textContent = t('docType');
+    document.getElementById('lbl-subject').textContent = t('subject');
+    document.getElementById('lbl-date').textContent = t('date');
+    document.getElementById('ui-participants-title').textContent = t('participants');
+    document.getElementById('btn-add-participant').textContent = t('addParticipant');
+    document.getElementById('project-id').placeholder = t('phProjectId');
+    document.getElementById('subject').placeholder = t('phSubject');
+    document.getElementById('ui-notes-title').textContent = t('notes');
+    document.getElementById('btn-add-note').textContent = t('addTopic');
+    document.getElementById('ui-decisions-title').textContent = t('decisions');
+    document.getElementById('btn-add-decision').textContent = t('add');
+    document.getElementById('ui-actions-title').textContent = t('actionPoints');
+    document.getElementById('btn-add-action').textContent = t('add');
+    document.getElementById('btn-reset').textContent = t('reset');
+    document.getElementById('btn-download-text').textContent = t('download');
+    document.getElementById('ui-preview-title').textContent = t('previewTitle');
+    document.getElementById('btn-copy-text').textContent = t('copy');
+    renderParticipants();
+    renderNotes();
+    renderDecisions();
+    renderActions();
+    updatePreview();
+  }
+
+  var notes = [];
+  var decisions = [];
+  var actions = [];
+  var participants = [];
+
+  document.addEventListener('DOMContentLoaded', function() {
     document.getElementById('meeting-date').value = new Date().toISOString().split('T')[0];
-    // Start with one note topic
-    addParticipant();
+    addParticipant(false);
     addNote();
     addDecision();
     addAction();
-    updatePreview();
+    applyLang();
   });
 
-  // ─── Participants ─────────────────────────────────────────────────────────
-  function addParticipant() {
+  function addParticipant(focusLast) {
     participants.push('');
     renderParticipants();
     updatePreview();
+    if (focusLast) {
+      setTimeout(function() {
+        var container = document.getElementById('participants-container');
+        var inputs = container.querySelectorAll('input[type="text"]');
+        if (inputs.length > 0) inputs[inputs.length - 1].focus();
+      }, 10);
+    }
   }
 
   function removeParticipant(idx) {
@@ -407,46 +633,53 @@
     updatePreview();
   }
 
-  function renderParticipants() {
-    const container = document.getElementById('participants-container');
-    container.innerHTML = '';
-    participants.forEach((p, i) => {
-      const div = document.createElement('div');
-      div.className = 'decision-item';
-      div.innerHTML = `
-        <div class="bullet-row">
-          <input type="text" value="${escAttr(p)}" placeholder="Name…"
-            oninput="participants[${i}]=this.value;updatePreview()" />
-          <button class="btn btn-danger btn-small" onclick="removeParticipant(${i})" style="margin-top:2px">✕</button>
-        </div>
-      `;
-      container.appendChild(div);
-    });
+  function handleParticipantTab(event, idx) {
+    if (event.key === 'Tab') {
+      event.preventDefault();
+      participants[idx] = event.target.value;
+      addParticipant(true);
+    }
   }
 
-  // ─── Notes ────────────────────────────────────────────────────────────────
+  function renderParticipants() {
+    var container = document.getElementById('participants-container');
+    container.innerHTML = '';
+    for (var i = 0; i < participants.length; i++) {
+      var div = document.createElement('div');
+      div.className = 'decision-item';
+      div.innerHTML =
+        '<div class="bullet-row">' +
+          '<input type="text" value="' + escAttr(participants[i]) + '" placeholder="' + escAttr(t('phParticipant')) + '"' +
+            ' oninput="participants[' + i + ']=this.value;updatePreview()"' +
+            ' onkeydown="handleParticipantTab(event,' + i + ')" />' +
+          '<button type="button" class="btn btn-danger btn-small" onclick="removeParticipant(' + i + ')" style="margin-top:2px">\u2715</button>' +
+        '</div>';
+      container.appendChild(div);
+    }
+  }
+
   function addNote() {
-    const id = Date.now();
-    notes.push({ id, subject: '', bullets: [''] });
+    var id = Date.now();
+    notes.push({ id: id, subject: '', bullets: [''] });
     renderNotes();
     updatePreview();
   }
 
   function removeNote(id) {
-    notes = notes.filter(n => n.id !== id);
+    notes = notes.filter(function(n) { return n.id !== id; });
     renderNotes();
     updatePreview();
   }
 
   function addBullet(noteId) {
-    const note = notes.find(n => n.id === noteId);
+    var note = notes.find(function(n) { return n.id === noteId; });
     if (note) note.bullets.push('');
     renderNotes();
     updatePreview();
   }
 
   function removeBullet(noteId, idx) {
-    const note = notes.find(n => n.id === noteId);
+    var note = notes.find(function(n) { return n.id === noteId; });
     if (note && note.bullets.length > 1) {
       note.bullets.splice(idx, 1);
     } else if (note) {
@@ -457,38 +690,41 @@
   }
 
   function renderNotes() {
-    const container = document.getElementById('notes-container');
+    var container = document.getElementById('notes-container');
     container.innerHTML = '';
-    notes.forEach((note, ni) => {
-      const div = document.createElement('div');
+    for (var ni = 0; ni < notes.length; ni++) {
+      var note = notes[ni];
+      var div = document.createElement('div');
       div.className = 'note-item';
-      div.innerHTML = `
-        <div class="item-header">
-          <span class="item-index">Topic ${ni + 1}</span>
-          <button class="btn btn-danger btn-small" onclick="removeNote(${note.id})">Remove</button>
-        </div>
-        <div class="field">
-          <label>Subject / Heading</label>
-          <input type="text" value="${escAttr(note.subject)}" placeholder="e.g. Project Status"
-            oninput="notes.find(n=>n.id===${note.id}).subject=this.value;updatePreview()" />
-        </div>
-        <label>Bullet Points</label>
-        <div class="bullet-list" id="bullets-${note.id}">
-          ${note.bullets.map((b, bi) => `
-            <div class="bullet-row">
-              <textarea rows="1" placeholder="Note…"
-                oninput="notes.find(n=>n.id===${note.id}).bullets[${bi}]=this.value;autoResize(this);updatePreview()"
-              >${escHtml(b)}</textarea>
-              <button class="btn btn-danger btn-small" onclick="removeBullet(${note.id},${bi})" style="margin-top:2px">✕</button>
-            </div>`).join('')}
-        </div>
-        <button class="add-btn" onclick="addBullet(${note.id})" style="margin-top:8px">+ bullet</button>
-      `;
+      var bulletsHtml = '';
+      for (var bi = 0; bi < note.bullets.length; bi++) {
+        bulletsHtml +=
+          '<div class="bullet-row">' +
+            '<textarea rows="1" placeholder="' + escAttr(t('phNote')) + '"' +
+              ' oninput="notes.find(function(n){return n.id===' + note.id + '}).bullets[' + bi + ']=this.value;autoResize(this);updatePreview()"' +
+            '>' + escHtml(note.bullets[bi]) + '</textarea>' +
+            '<button type="button" class="btn btn-danger btn-small" onclick="removeBullet(' + note.id + ',' + bi + ')" style="margin-top:2px">\u2715</button>' +
+          '</div>';
+      }
+      div.innerHTML =
+        '<div class="item-header">' +
+          '<span class="item-index">' + escHtml(t('topicLabel')) + ' ' + (ni + 1) + '</span>' +
+          '<button type="button" class="btn btn-danger btn-small" onclick="removeNote(' + note.id + ')">' + escHtml(t('remove')) + '</button>' +
+        '</div>' +
+        '<div class="field">' +
+          '<label>' + escHtml(t('subjectHeading')) + '</label>' +
+          '<input type="text" value="' + escAttr(note.subject) + '" placeholder="e.g. Project Status"' +
+            ' oninput="notes.find(function(n){return n.id===' + note.id + '}).subject=this.value;updatePreview()" />' +
+        '</div>' +
+        '<label>' + escHtml(t('bulletPoints')) + '</label>' +
+        '<div class="bullet-list" id="bullets-' + note.id + '">' +
+          bulletsHtml +
+        '</div>' +
+        '<button type="button" class="add-btn" onclick="addBullet(' + note.id + ')" style="margin-top:8px">' + escHtml(t('addBullet')) + '</button>';
       container.appendChild(div);
-    });
+    }
   }
 
-  // ─── Decisions ────────────────────────────────────────────────────────────
   function addDecision() {
     decisions.push('');
     renderDecisions();
@@ -502,24 +738,22 @@
   }
 
   function renderDecisions() {
-    const container = document.getElementById('decisions-container');
+    var container = document.getElementById('decisions-container');
     container.innerHTML = '';
-    decisions.forEach((d, i) => {
-      const div = document.createElement('div');
+    for (var i = 0; i < decisions.length; i++) {
+      var div = document.createElement('div');
       div.className = 'decision-item';
-      div.innerHTML = `
-        <div class="bullet-row">
-          <textarea rows="1" placeholder="Decision…"
-            oninput="decisions[${i}]=this.value;autoResize(this);updatePreview()"
-          >${escHtml(d)}</textarea>
-          <button class="btn btn-danger btn-small" onclick="removeDecision(${i})" style="margin-top:2px">✕</button>
-        </div>
-      `;
+      div.innerHTML =
+        '<div class="bullet-row">' +
+          '<textarea rows="1" placeholder="' + escAttr(t('phDecision')) + '"' +
+            ' oninput="decisions[' + i + ']=this.value;autoResize(this);updatePreview()"' +
+          '>' + escHtml(decisions[i]) + '</textarea>' +
+          '<button type="button" class="btn btn-danger btn-small" onclick="removeDecision(' + i + ')" style="margin-top:2px">\u2715</button>' +
+        '</div>';
       container.appendChild(div);
-    });
+    }
   }
 
-  // ─── Actions ──────────────────────────────────────────────────────────────
   function addAction() {
     actions.push({ text: '', assignee: '' });
     renderActions();
@@ -533,212 +767,194 @@
   }
 
   function renderActions() {
-    const container = document.getElementById('actions-container');
+    var container = document.getElementById('actions-container');
     container.innerHTML = '';
-    actions.forEach((a, i) => {
-      const div = document.createElement('div');
+    for (var i = 0; i < actions.length; i++) {
+      var a = actions[i];
+      var div = document.createElement('div');
       div.className = 'action-item';
-      div.innerHTML = `
-        <div class="item-header">
-          <span class="item-index">Action ${i + 1}</span>
-          <button class="btn btn-danger btn-small" onclick="removeAction(${i})">Remove</button>
-        </div>
-        <div class="field">
-          <label>Action</label>
-          <textarea rows="2" placeholder="Describe the action…"
-            oninput="actions[${i}].text=this.value;autoResize(this);updatePreview()"
-          >${escHtml(a.text)}</textarea>
-        </div>
-        <div class="field">
-          <label>Assignee</label>
-          <input type="text" value="${escAttr(a.assignee)}" placeholder="Name"
-            oninput="actions[${i}].assignee=this.value;updatePreview()" />
-        </div>
-      `;
+      div.innerHTML =
+        '<div class="item-header">' +
+          '<span class="item-index">' + escHtml(t('actionLabel')) + ' ' + (i + 1) + '</span>' +
+          '<button type="button" class="btn btn-danger btn-small" onclick="removeAction(' + i + ')">' + escHtml(t('remove')) + '</button>' +
+        '</div>' +
+        '<div class="field">' +
+          '<label>' + escHtml(t('action')) + '</label>' +
+          '<textarea rows="2" placeholder="' + escAttr(t('phAction')) + '"' +
+            ' oninput="actions[' + i + '].text=this.value;autoResize(this);updatePreview()"' +
+          '>' + escHtml(a.text) + '</textarea>' +
+        '</div>' +
+        '<div class="field">' +
+          '<label>' + escHtml(t('assignee')) + '</label>' +
+          '<input type="text" value="' + escAttr(a.assignee) + '" placeholder="' + escAttr(t('phAssignee')) + '"' +
+            ' oninput="actions[' + i + '].assignee=this.value;updatePreview()" />' +
+        '</div>';
       container.appendChild(div);
-    });
+    }
   }
 
-  // ─── Markdown generation ──────────────────────────────────────────────────
   function buildReference() {
-    const date = document.getElementById('meeting-date').value || '';
-    const projectId = document.getElementById('project-id').value.trim();
-    const docType = document.getElementById('doc-type').value.trim() || 'MOM';
-    const subject = document.getElementById('subject').value.trim();
+    var date = document.getElementById('meeting-date').value || '';
+    var projectId = document.getElementById('project-id').value.trim();
+    var docType = document.getElementById('doc-type').value.trim() || 'MOM';
+    var subject = document.getElementById('subject').value.trim();
 
-    const datePart = date ? date.replace(/-/g, '') : 'YYYYMMDD';
-    const projPart = projectId || '[Project ID]';
-    const docPart = docType;
-    const subPart = subject ? subject.replace(/\s+/g, '-') : '[Subject]';
+    var datePart = date ? date.replace(/-/g, '') : 'YYYYMMDD';
+    var projPart = projectId || '[Project ID]';
+    var docPart = docType;
+    var subPart = subject ? subject.replace(/\s+/g, '-') : '[Subject]';
 
-    return `${datePart}_${projPart}_${docPart}_${subPart}`;
+    return datePart + '_' + projPart + '_' + docPart + '_' + subPart;
   }
 
-  function buildMarkdown(isTemplate = false) {
+  function buildMarkdown(isTemplate) {
     if (isTemplate) {
-      return `[Subject]
-
-DATE
-
-  [Actual Date]
-
-DEELNEMERS
-
-  - [Name]
-
-CONTENT
-
-  - [Topic Heading]
-
-NOTES
-
-  [Topic Heading]
-
-  - Bullet points with text
-
-FOLLOW-UP
-
-  Decisions
-
-  - [Decision 1]
-
-  Action Points
-
-  - [Action description] - [AssigneeName]
-`;
+      return '# [Subject]\n\n' +
+        '## ' + t('mdDate') + '\n\n' +
+        '[Actual Date]\n\n' +
+        '## ' + t('mdParticipants') + '\n\n' +
+        '- [Name]\n\n' +
+        '## ' + t('mdContent') + '\n\n' +
+        '- [Topic Heading]\n\n' +
+        '## ' + t('mdNotes') + '\n\n' +
+        '### [Topic Heading]\n\n' +
+        '- Bullet points with text\n\n' +
+        '## ' + t('mdFollowUp') + '\n\n' +
+        '### ' + t('mdDecisions') + '\n\n' +
+        '- [Decision 1]\n\n' +
+        '### ' + t('mdActionPoints') + '\n\n' +
+        '- [Action description] - [AssigneeName]\n';
     }
 
-    const date = document.getElementById('meeting-date').value;
-    const subject = document.getElementById('subject').value.trim();
+    var date = document.getElementById('meeting-date').value;
+    var subject = document.getElementById('subject').value.trim();
 
-    const displayDate = date
+    var displayDate = date
       ? new Date(date + 'T00:00:00').toLocaleDateString('en-GB', { day: '2-digit', month: 'long', year: 'numeric' })
       : '[Date]';
 
-    let md = '';
+    var md = '';
 
-    md += `${subject || '[Subject]'}\n\n`;
-    md += `DATE\n\n`;
-    md += `  ${displayDate}\n\n`;
+    md += '# ' + (subject || '[Subject]') + '\n\n';
+    md += '## ' + t('mdDate') + '\n\n';
+    md += displayDate + '\n\n';
 
-    md += `DEELNEMERS\n\n`;
-    const filledParticipants = participants.filter(p => p.trim());
+    md += '## ' + t('mdParticipants') + '\n\n';
+    var filledParticipants = participants.filter(function(p) { return p.trim(); });
     if (filledParticipants.length > 0) {
-      filledParticipants.forEach(p => { md += `  - ${p.trim()}\n`; });
+      for (var pi = 0; pi < filledParticipants.length; pi++) {
+        md += '- ' + filledParticipants[pi].trim() + '\n';
+      }
     } else {
-      md += `  - \n`;
+      md += '- \n';
     }
     md += '\n';
 
-    md += `CONTENT\n\n`;
+    md += '## ' + t('mdContent') + '\n\n';
 
-    // Table of Contents
     if (notes.length > 0) {
-      notes.forEach((note, i) => {
-        const heading = note.subject || `Topic ${i + 1}`;
-        md += `  - ${heading}\n`;
-      });
+      for (var ci = 0; ci < notes.length; ci++) {
+        var heading = notes[ci].subject || (t('topicLabel') + ' ' + (ci + 1));
+        md += '- ' + heading + '\n';
+      }
     } else {
-      md += `  [Table of Contents]\n`;
+      md += '- [Table of Contents]\n';
     }
 
-    md += `\nNOTES\n\n`;
+    md += '\n## ' + t('mdNotes') + '\n\n';
 
     if (notes.length > 0) {
-      notes.forEach((note) => {
-        const heading = note.subject || 'Topic';
-        md += `  ${heading}\n\n`;
-        const filledBullets = note.bullets.filter(b => b.trim());
+      for (var ni = 0; ni < notes.length; ni++) {
+        var noteHeading = notes[ni].subject || (t('topicLabel') + ' ' + (ni + 1));
+        md += '### ' + noteHeading + '\n\n';
+        var filledBullets = notes[ni].bullets.filter(function(b) { return b.trim(); });
         if (filledBullets.length > 0) {
-          filledBullets.forEach(b => { md += `  - ${b.trim()}\n`; });
+          for (var bi = 0; bi < filledBullets.length; bi++) {
+            md += '- ' + filledBullets[bi].trim() + '\n';
+          }
         } else {
-          md += `  - \n`;
+          md += '- \n';
         }
         md += '\n';
-      });
+      }
     }
 
-    md += `\nFOLLOW-UP\n\n`;
+    md += '## ' + t('mdFollowUp') + '\n\n';
 
-    md += `  Decisions\n\n`;
-    const filledDecisions = decisions.filter(d => d.trim());
+    md += '### ' + t('mdDecisions') + '\n\n';
+    var filledDecisions = decisions.filter(function(d) { return d.trim(); });
     if (filledDecisions.length > 0) {
-      filledDecisions.forEach(d => { md += `  - ${d.trim()}\n`; });
+      for (var di = 0; di < filledDecisions.length; di++) {
+        md += '- ' + filledDecisions[di].trim() + '\n';
+      }
     } else {
-      md += `  - \n`;
+      md += '- \n';
     }
 
-    md += `\n  Action Points\n\n`;
-    const filledActions = actions.filter(a => a.text.trim());
+    md += '\n### ' + t('mdActionPoints') + '\n\n';
+    var filledActions = actions.filter(function(a) { return a.text.trim(); });
     if (filledActions.length > 0) {
-      filledActions.forEach(a => {
-        const assignee = a.assignee.trim() ? ` - ${a.assignee.trim()}` : '';
-        md += `  - ${a.text.trim()}${assignee}\n`;
-      });
+      for (var ai = 0; ai < filledActions.length; ai++) {
+        var assignee = filledActions[ai].assignee.trim() ? ' - ' + filledActions[ai].assignee.trim() : '';
+        md += '- ' + filledActions[ai].text.trim() + assignee + '\n';
+      }
     } else {
-      md += `  - \n`;
+      md += '- \n';
     }
 
     return md;
   }
 
-  function slugify(text) {
-    return text.toLowerCase().replace(/\s+/g, '-').replace(/[^\w-]/g, '');
-  }
-
   function hasData() {
-    const subject = document.getElementById('subject').value.trim();
-    const projectId = document.getElementById('project-id').value.trim();
-    const hasNoteContent = notes.some(n => n.subject.trim() || n.bullets.some(b => b.trim()));
-    const hasDecisions = decisions.some(d => d.trim());
-    const hasActions = actions.some(a => a.text.trim());
+    var subject = document.getElementById('subject').value.trim();
+    var projectId = document.getElementById('project-id').value.trim();
+    var hasNoteContent = notes.some(function(n) { return n.subject.trim() || n.bullets.some(function(b) { return b.trim(); }); });
+    var hasDecisions = decisions.some(function(d) { return d.trim(); });
+    var hasActions = actions.some(function(a) { return a.text.trim(); });
     return subject || projectId || hasNoteContent || hasDecisions || hasActions;
   }
 
-  // ─── Preview ──────────────────────────────────────────────────────────────
   function updatePreview() {
-    const ref = buildReference();
-    document.getElementById('ref-preview').textContent = 'Reference: ' + ref;
-    const md = buildMarkdown(false);
+    var ref = buildReference();
+    document.getElementById('ref-preview').textContent = t('refLabel') + ref;
+    var md = buildMarkdown(false);
     document.getElementById('preview-output').textContent = md;
   }
 
-  // ─── Actions ──────────────────────────────────────────────────────────────
   function downloadMD() {
-    const useTemplate = !hasData();
-    const md = buildMarkdown(useTemplate);
-    const ref = buildReference();
-    const filename = (useTemplate ? 'YYYYMMDD_ProjectID_MOM_Subject' : ref) + '.txt';
+    var useTemplate = !hasData();
+    var md = buildMarkdown(useTemplate);
+    var ref = buildReference();
+    var filename = (useTemplate ? 'YYYYMMDD_ProjectID_MOM_Subject' : ref) + '.txt';
 
-    const blob = new Blob([md], { type: 'text/plain;charset=utf-8' });
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement('a');
+    var blob = new Blob([md], { type: 'text/plain;charset=utf-8' });
+    var url = URL.createObjectURL(blob);
+    var a = document.createElement('a');
     a.href = url;
     a.download = filename;
     a.click();
     URL.revokeObjectURL(url);
 
-    showToast(useTemplate ? 'Template downloaded!' : 'Downloaded: ' + filename);
+    showToast(useTemplate ? t('toastTemplate') : t('toastDownloaded') + filename);
   }
 
   function copyToClipboard() {
-    const text = document.getElementById('preview-output').textContent;
-    navigator.clipboard.writeText(text).then(() => {
-      showToast('Copied to clipboard!');
-    }).catch(() => {
-      // Fallback
-      const ta = document.createElement('textarea');
+    var text = document.getElementById('preview-output').textContent;
+    navigator.clipboard.writeText(text).then(function() {
+      showToast(t('toastCopied'));
+    }).catch(function() {
+      var ta = document.createElement('textarea');
       ta.value = text;
       document.body.appendChild(ta);
       ta.select();
       document.execCommand('copy');
       document.body.removeChild(ta);
-      showToast('Copied to clipboard!');
+      showToast(t('toastCopied'));
     });
   }
 
   function resetForm() {
-    if (!hasData() || confirm('Reset all fields?')) {
+    if (!hasData() || confirm(t('confirmReset'))) {
       document.getElementById('project-id').value = '';
       document.getElementById('doc-type').value = 'MOM';
       document.getElementById('subject').value = '';
@@ -747,7 +963,7 @@ FOLLOW-UP
       decisions = [];
       actions = [];
       participants = [];
-      addParticipant();
+      addParticipant(false);
       addNote();
       addDecision();
       addAction();
@@ -756,10 +972,10 @@ FOLLOW-UP
   }
 
   function showToast(msg) {
-    const t = document.getElementById('toast');
-    t.textContent = msg;
-    t.classList.add('show');
-    setTimeout(() => t.classList.remove('show'), 2500);
+    var el = document.getElementById('toast');
+    el.textContent = msg;
+    el.classList.add('show');
+    setTimeout(function() { el.classList.remove('show'); }, 2500);
   }
 
   function autoResize(el) {
