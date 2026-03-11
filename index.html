@@ -39,6 +39,7 @@
       top: 0;
       z-index: 10;
       box-shadow: var(--shadow);
+      flex-wrap: wrap;
     }
 
     header h1 {
@@ -111,6 +112,49 @@
     .btn-danger { background: #fee2e2; color: var(--danger); }
     .btn-danger:hover { background: #fecaca; }
     .btn-small { padding: 4px 10px; font-size: .75rem; }
+
+    .btn-save {
+      background: #dcfce7;
+      color: #15803d;
+      border: 1px solid #bbf7d0;
+    }
+    .btn-save:hover {
+      background: #bbf7d0;
+    }
+
+    .btn-load {
+      background: #dbeafe;
+      color: #1d4ed8;
+      border: 1px solid #bfdbfe;
+    }
+    .btn-load:hover {
+      background: #bfdbfe;
+    }
+
+    .btn-save svg, .btn-load svg {
+      flex-shrink: 0;
+    }
+
+    .file-version-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+      padding: 4px 10px;
+      border-radius: 99px;
+      background: #ede9fe;
+      color: #6d28d9;
+      font-size: .75rem;
+      font-weight: 700;
+      letter-spacing: .02em;
+      white-space: nowrap;
+      max-width: 260px;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .file-version-badge svg {
+      flex-shrink: 0;
+    }
 
     .layout {
       display: flex;
@@ -301,6 +345,16 @@
 
     .toast.show { opacity: 1; transform: translateY(0); }
 
+    /* Hidden file input */
+    #xml-file-input { display: none; }
+
+    .header-divider {
+      width: 1px;
+      height: 24px;
+      background: var(--border);
+      margin: 0 4px;
+    }
+
   </style>
 </head>
 <body>
@@ -309,14 +363,51 @@
   <h1>MOM</h1>
   <span class="subtitle" id="ui-subtitle">Notulen van Vergadering</span>
   <div class="spacer"></div>
-  <span class="version-tag"><strong>Versie</strong> 2.4</span>
+
+  <!-- File version badge (shown after load/save) -->
+  <span class="file-version-badge" id="file-version-badge" style="display:none;">
+    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+      <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
+      <polyline points="14 2 14 8 20 8"/>
+    </svg>
+    <span id="file-version-label"></span>
+  </span>
+
+  <span class="version-tag"><strong>Versie</strong> 3.0</span>
+
   <div class="lang-group">
     <button type="button" class="lang-btn active" data-lang="NL" onclick="setLang('NL')">NL</button>
     <button type="button" class="lang-btn" data-lang="FR" onclick="setLang('FR')">FR</button>
     <button type="button" class="lang-btn" data-lang="EN" onclick="setLang('EN')">EN</button>
   </div>
+
+  <div class="header-divider"></div>
+
+  <!-- Save XML -->
+  <button type="button" class="btn btn-save" id="btn-save-xml" onclick="saveXML()">
+    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+      <path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/>
+      <polyline points="17 21 17 13 7 13 7 21"/>
+      <polyline points="7 3 7 8 15 8"/>
+    </svg>
+    <span id="btn-save-text">Bewaar</span>
+  </button>
+
+  <!-- Load XML -->
+  <button type="button" class="btn btn-load" id="btn-load-xml" onclick="document.getElementById('xml-file-input').click()">
+    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+      <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
+      <polyline points="17 8 12 3 7 8"/>
+      <line x1="12" y1="3" x2="12" y2="15"/>
+    </svg>
+    <span id="btn-load-text">Lees</span>
+  </button>
+  <input type="file" id="xml-file-input" accept=".xml" onchange="loadXML(event)" />
+
+  <div class="header-divider"></div>
+
   <button type="button" class="btn btn-secondary" id="btn-reset" onclick="resetForm()">Reset</button>
-  <button type="button" class="btn btn-primary" id="btn-download" onclick="downloadMD()" style="margin-left:8px">
+  <button type="button" class="btn btn-primary" id="btn-download" onclick="downloadMD()" style="margin-left:4px">
     <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
       <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
       <polyline points="7 10 12 15 17 10"/>
@@ -457,7 +548,13 @@
       mdNotes: 'Notities',
       mdFollowUp: 'Opvolging',
       mdDecisions: 'Beslissingen',
-      mdActionPoints: 'Actiepunten'
+      mdActionPoints: 'Actiepunten',
+      save: 'Bewaar',
+      load: 'Lees',
+      toastSaved: 'Bewaard: ',
+      toastLoaded: 'Ingelezen: ',
+      toastLoadError: 'Fout bij inlezen van XML bestand.',
+      toastInvalidXml: 'Ongeldig XML bestand.'
     },
     FR: {
       subtitle: 'Compte Rendu de R\u00e9union',
@@ -503,7 +600,13 @@
       mdNotes: 'Notes',
       mdFollowUp: 'Suivi',
       mdDecisions: 'D\u00e9cisions',
-      mdActionPoints: "Points d'Action"
+      mdActionPoints: "Points d'Action",
+      save: 'Sauvegarder',
+      load: 'Charger',
+      toastSaved: 'Sauvegard\u00e9: ',
+      toastLoaded: 'Charg\u00e9: ',
+      toastLoadError: 'Erreur lors du chargement du fichier XML.',
+      toastInvalidXml: 'Fichier XML invalide.'
     },
     EN: {
       subtitle: 'Minutes of Meeting',
@@ -549,7 +652,13 @@
       mdNotes: 'Notes',
       mdFollowUp: 'Follow-up',
       mdDecisions: 'Decisions',
-      mdActionPoints: 'Action Points'
+      mdActionPoints: 'Action Points',
+      save: 'Save',
+      load: 'Load',
+      toastSaved: 'Saved: ',
+      toastLoaded: 'Loaded: ',
+      toastLoadError: 'Error loading XML file.',
+      toastInvalidXml: 'Invalid XML file.'
     }
   };
 
@@ -593,6 +702,8 @@
     document.getElementById('btn-download-text').textContent = t('download');
     document.getElementById('ui-preview-title').textContent = t('previewTitle');
     document.getElementById('btn-copy-text').textContent = t('copy');
+    document.getElementById('btn-save-text').textContent = t('save');
+    document.getElementById('btn-load-text').textContent = t('load');
     renderParticipants();
     renderNotes();
     renderDecisions();
@@ -606,6 +717,10 @@
   var actions = [];
   var participants = [];
 
+  // ─── XML Versioning State ─────────────────────────────────────────────────
+  var currentFileVersion = 0;       // 0 = no file loaded/saved yet
+  var loadedFromFile = false;       // true if data was loaded from an XML file
+
   // ─── Init ─────────────────────────────────────────────────────────────────
   document.addEventListener('DOMContentLoaded', function() {
     document.getElementById('meeting-date').value = new Date().toISOString().split('T')[0];
@@ -616,7 +731,20 @@
     renderActions();
     updatePreview();
     applyLang();
+    updateVersionBadge();
   });
+
+  // ─── Version Badge ────────────────────────────────────────────────────────
+  function updateVersionBadge() {
+    var badge = document.getElementById('file-version-badge');
+    var label = document.getElementById('file-version-label');
+    if (currentFileVersion > 0) {
+      badge.style.display = 'inline-flex';
+      label.textContent = 'v' + currentFileVersion;
+    } else {
+      badge.style.display = 'none';
+    }
+  }
 
   // ─── Participants ─────────────────────────────────────────────────────────
   function addParticipant(focusLast) {
@@ -897,7 +1025,6 @@
     var md = '';
 
     md += ref + '\n\n';
-
     md += '## ' + (subject || '[Subject]') + '\n\n';
     md += '## ' + t('mdDate') + '\n\n';
     md += '- ' + displayDate + '\n\n';
@@ -914,7 +1041,6 @@
     md += '\n';
 
     md += '## ' + t('mdContent') + '\n\n';
-
     if (notes.length > 0) {
       for (var ci = 0; ci < notes.length; ci++) {
         var heading = notes[ci].subject || (t('topicLabel') + ' ' + (ci + 1));
@@ -925,7 +1051,6 @@
     }
 
     md += '\n# ' + t('mdNotes') + '\n\n';
-
     if (notes.length > 0) {
       for (var ni = 0; ni < notes.length; ni++) {
         var noteHeading = notes[ni].subject || (t('topicLabel') + ' ' + (ni + 1));
@@ -943,7 +1068,6 @@
     }
 
     md += '# ' + t('mdFollowUp') + '\n\n';
-
     md += '## ' + t('mdDecisions') + '\n\n';
     var filledDecisions = decisions.filter(function(d) { return d.trim(); });
     if (filledDecisions.length > 0) {
@@ -983,6 +1107,216 @@
     document.getElementById('ref-preview').textContent = t('refLabel') + ref;
     var md = buildMarkdown(false);
     document.getElementById('preview-output').textContent = md;
+    updateVersionBadge();
+  }
+
+  // ─── XML Helpers ──────────────────────────────────────────────────────────
+  function escXml(str) {
+    return str
+      .replace(/&/g, '&amp;')
+      .replace(/</g, '&lt;')
+      .replace(/>/g, '&gt;')
+      .replace(/"/g, '&quot;')
+      .replace(/'/g, '&apos;');
+  }
+
+  function getXmlText(parentEl, tagName) {
+    var el = parentEl.querySelector(tagName);
+    return el ? (el.textContent || '') : '';
+  }
+
+  // ─── XML Build ────────────────────────────────────────────────────────────
+  function buildXML(version) {
+    var projectId = document.getElementById('project-id').value.trim();
+    var docType = document.getElementById('doc-type').value.trim();
+    var subject = document.getElementById('subject').value.trim();
+    var date = document.getElementById('meeting-date').value;
+
+    var xml = '<?xml version="1.0" encoding="UTF-8"?>\n';
+    xml += '<mom version="' + version + '" lang="' + currentLang + '">\n';
+    xml += '  <meta>\n';
+    xml += '    <projectId>' + escXml(projectId) + '</projectId>\n';
+    xml += '    <docType>' + escXml(docType) + '</docType>\n';
+    xml += '    <subject>' + escXml(subject) + '</subject>\n';
+    xml += '    <date>' + escXml(date) + '</date>\n';
+    xml += '  </meta>\n';
+
+    xml += '  <participants>\n';
+    for (var pi = 0; pi < participants.length; pi++) {
+      xml += '    <participant>' + escXml(participants[pi]) + '</participant>\n';
+    }
+    xml += '  </participants>\n';
+
+    xml += '  <notes>\n';
+    for (var ni = 0; ni < notes.length; ni++) {
+      var note = notes[ni];
+      xml += '    <note>\n';
+      xml += '      <subject>' + escXml(note.subject) + '</subject>\n';
+      xml += '      <bullets>\n';
+      for (var bi = 0; bi < note.bullets.length; bi++) {
+        xml += '        <bullet>' + escXml(note.bullets[bi]) + '</bullet>\n';
+      }
+      xml += '      </bullets>\n';
+      xml += '    </note>\n';
+    }
+    xml += '  </notes>\n';
+
+    xml += '  <decisions>\n';
+    for (var di = 0; di < decisions.length; di++) {
+      xml += '    <decision>' + escXml(decisions[di]) + '</decision>\n';
+    }
+    xml += '  </decisions>\n';
+
+    xml += '  <actions>\n';
+    for (var ai = 0; ai < actions.length; ai++) {
+      xml += '    <action>\n';
+      xml += '      <text>' + escXml(actions[ai].text) + '</text>\n';
+      xml += '      <assignee>' + escXml(actions[ai].assignee) + '</assignee>\n';
+      xml += '    </action>\n';
+    }
+    xml += '  </actions>\n';
+
+    xml += '</mom>\n';
+    return xml;
+  }
+
+  // ─── XML Save ─────────────────────────────────────────────────────────────
+  function saveXML() {
+    // Increment version on every save
+    currentFileVersion++;
+    loadedFromFile = true;
+
+    var ref = buildReference();
+    var filename = ref + '_v' + currentFileVersion + '.xml';
+    var xml = buildXML(currentFileVersion);
+
+    var blob = new Blob([xml], { type: 'application/xml;charset=utf-8' });
+    var url = URL.createObjectURL(blob);
+    var a = document.createElement('a');
+    a.href = url;
+    a.download = filename;
+    a.click();
+    URL.revokeObjectURL(url);
+
+    updateVersionBadge();
+    showToast(t('toastSaved') + filename);
+  }
+
+  // ─── XML Load ─────────────────────────────────────────────────────────────
+  function loadXML(event) {
+    var file = event.target.files[0];
+    if (!file) return;
+
+    var reader = new FileReader();
+    reader.onload = function(e) {
+      try {
+        var parser = new DOMParser();
+        var xmlDoc = parser.parseFromString(e.target.result, 'application/xml');
+
+        // Check for parse errors
+        var parseError = xmlDoc.querySelector('parsererror');
+        if (parseError) {
+          showToast(t('toastInvalidXml'));
+          return;
+        }
+
+        var momEl = xmlDoc.querySelector('mom');
+        if (!momEl) {
+          showToast(t('toastInvalidXml'));
+          return;
+        }
+
+        // Extract version from XML attribute
+        var xmlVersion = parseInt(momEl.getAttribute('version') || '0', 10);
+        var xmlLang = momEl.getAttribute('lang') || 'NL';
+
+        // Also try to extract version from filename (e.g. _v3.xml)
+        var filenameMatch = file.name.match(/_v(\d+)\.xml$/i);
+        if (filenameMatch) {
+          var fnVersion = parseInt(filenameMatch[1], 10);
+          if (fnVersion > xmlVersion) xmlVersion = fnVersion;
+        }
+
+        currentFileVersion = xmlVersion;
+        loadedFromFile = true;
+
+        // Set language
+        setLang(xmlLang);
+
+        // Meta
+        var metaEl = xmlDoc.querySelector('meta');
+        if (metaEl) {
+          document.getElementById('project-id').value = getXmlText(metaEl, 'projectId');
+          document.getElementById('doc-type').value = getXmlText(metaEl, 'docType') || 'MOM';
+          document.getElementById('subject').value = getXmlText(metaEl, 'subject');
+          document.getElementById('meeting-date').value = getXmlText(metaEl, 'date');
+        }
+
+        // Participants
+        participants = [];
+        var partEls = xmlDoc.querySelectorAll('participants > participant');
+        for (var pi = 0; pi < partEls.length; pi++) {
+          participants.push(partEls[pi].textContent || '');
+        }
+        if (participants.length === 0) participants.push('');
+
+        // Notes
+        notes = [];
+        var noteEls = xmlDoc.querySelectorAll('notes > note');
+        for (var ni = 0; ni < noteEls.length; ni++) {
+          var noteEl = noteEls[ni];
+          var noteSubject = getXmlText(noteEl, 'subject');
+          var bulletEls = noteEl.querySelectorAll('bullets > bullet');
+          var bullets = [];
+          for (var bi = 0; bi < bulletEls.length; bi++) {
+            bullets.push(bulletEls[bi].textContent || '');
+          }
+          if (bullets.length === 0) bullets.push('');
+          notes.push({ id: Date.now() + ni, subject: noteSubject, bullets: bullets });
+        }
+        if (notes.length === 0) {
+          notes.push({ id: Date.now(), subject: '', bullets: [''] });
+        }
+
+        // Decisions
+        decisions = [];
+        var decEls = xmlDoc.querySelectorAll('decisions > decision');
+        for (var di = 0; di < decEls.length; di++) {
+          decisions.push(decEls[di].textContent || '');
+        }
+        if (decisions.length === 0) decisions.push('');
+
+        // Actions
+        actions = [];
+        var actEls = xmlDoc.querySelectorAll('actions > action');
+        for (var ai = 0; ai < actEls.length; ai++) {
+          var actEl = actEls[ai];
+          actions.push({
+            text: getXmlText(actEl, 'text'),
+            assignee: getXmlText(actEl, 'assignee')
+          });
+        }
+        if (actions.length === 0) actions.push({ text: '', assignee: '' });
+
+        // Re-render everything
+        renderParticipants();
+        renderNotes();
+        renderDecisions();
+        renderActions();
+        updatePreview();
+        updateVersionBadge();
+
+        showToast(t('toastLoaded') + file.name);
+
+      } catch (err) {
+        console.error('XML load error:', err);
+        showToast(t('toastLoadError'));
+      }
+    };
+    reader.readAsText(file);
+
+    // Reset the file input so the same file can be loaded again
+    event.target.value = '';
   }
 
   // ─── Download / Copy / Reset ───────────────────────────────────────────────
@@ -990,7 +1324,8 @@
     var useTemplate = !hasData();
     var md = buildMarkdown(useTemplate);
     var ref = buildReference();
-    var filename = (useTemplate ? 'YYYYMMDD_ProjectID_MOM_Subject' : ref) + '.txt';
+    var versionSuffix = currentFileVersion > 0 ? '_v' + currentFileVersion : '';
+    var filename = (useTemplate ? 'YYYYMMDD_ProjectID_MOM_Subject' : ref) + versionSuffix + '.txt';
 
     var blob = new Blob([md], { type: 'text/plain;charset=utf-8' });
     var url = URL.createObjectURL(blob);
@@ -1028,11 +1363,14 @@
       decisions = [];
       actions = [];
       participants = [];
+      currentFileVersion = 0;
+      loadedFromFile = false;
       addParticipant(false);
       addNote();
       addDecision();
       addAction();
       updatePreview();
+      updateVersionBadge();
     }
   }
 
