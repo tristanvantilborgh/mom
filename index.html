@@ -748,7 +748,7 @@
 
   // ─── Participants ─────────────────────────────────────────────────────────
   function addParticipant(focusLast) {
-    participants.push('');
+    participants.push({ name: '', present: true });
     renderParticipants();
     updatePreview();
     if (focusLast) {
@@ -766,10 +766,16 @@
     updatePreview();
   }
 
+  function toggleParticipantPresence(idx) {
+    participants[idx].present = !participants[idx].present;
+    renderParticipants();
+    updatePreview();
+  }
+
   function handleParticipantTab(event, idx) {
     if (event.key === 'Tab') {
       event.preventDefault();
-      participants[idx] = event.target.value;
+      participants[idx].name = event.target.value;
       addParticipant(true);
     }
   }
@@ -777,18 +783,27 @@
   function renderParticipants() {
     var container = document.getElementById('participants-container');
     container.innerHTML = '';
+    var wrapper = document.createElement('div');
+    wrapper.className = 'decision-item';
+    var rowsHtml = '';
     for (var i = 0; i < participants.length; i++) {
-      var div = document.createElement('div');
-      div.className = 'decision-item';
-      div.innerHTML =
-        '<div class="bullet-row">' +
-          '<input type="text" value="' + escAttr(participants[i]) + '" placeholder="' + escAttr(t('phParticipant')) + '"' +
-            ' oninput="participants[' + i + ']=this.value;updatePreview()"' +
+      var p = participants[i];
+      var checked = p.present ? ' checked' : '';
+      rowsHtml +=
+        '<div class="bullet-row" style="align-items:center;">' +
+          '<label class="presence-check" style="display:flex;align-items:center;margin-bottom:0;text-transform:none;letter-spacing:0;">' +
+            '<input type="checkbox"' + checked + ' onchange="toggleParticipantPresence(' + i + ')"' +
+              ' style="width:18px;height:18px;margin:0;cursor:pointer;accent-color:var(--accent);flex-shrink:0;" />' +
+          '</label>' +
+          '<input type="text" value="' + escAttr(p.name) + '" placeholder="' + escAttr(t('phParticipant')) + '"' +
+            ' style="' + (p.present ? '' : 'opacity:.5;text-decoration:line-through;') + '"' +
+            ' oninput="participants[' + i + '].name=this.value;updatePreview()"' +
             ' onkeydown="handleParticipantTab(event,' + i + ')" />' +
-          '<button type="button" class="btn btn-danger btn-small" onclick="removeParticipant(' + i + ')" style="margin-top:2px">\u2715</button>' +
+          '<button type="button" class="btn btn-danger btn-small" onclick="removeParticipant(' + i + ')" style="margin-top:0">\u2715</button>' +
         '</div>';
-      container.appendChild(div);
     }
+    wrapper.innerHTML = rowsHtml;
+    container.appendChild(wrapper);
   }
 
   // ─── Notes ────────────────────────────────────────────────────────────────
@@ -842,10 +857,15 @@
   function renderNotes() {
     var container = document.getElementById('notes-container');
     container.innerHTML = '';
+    if (notes.length === 0) return;
+    var wrapper = document.createElement('div');
+    wrapper.className = 'note-item';
+    var innerHtml = '';
     for (var ni = 0; ni < notes.length; ni++) {
       var note = notes[ni];
-      var div = document.createElement('div');
-      div.className = 'note-item';
+      if (ni > 0) {
+        innerHtml += '<hr style="border:none;border-top:1px solid var(--border);margin:14px 0;" />';
+      }
       var bulletsHtml = '';
       for (var bi = 0; bi < note.bullets.length; bi++) {
         bulletsHtml +=
@@ -857,7 +877,7 @@
             '<button type="button" class="btn btn-danger btn-small" onclick="removeBullet(' + note.id + ',' + bi + ')" style="margin-top:2px">\u2715</button>' +
           '</div>';
       }
-      div.innerHTML =
+      innerHtml +=
         '<div class="item-header">' +
           '<span class="item-index">' + escHtml(t('topicLabel')) + ' ' + (ni + 1) + '</span>' +
           '<button type="button" class="btn btn-danger btn-small" onclick="removeNote(' + note.id + ')">' + escHtml(t('remove')) + '</button>' +
@@ -872,8 +892,9 @@
           bulletsHtml +
         '</div>' +
         '<button type="button" class="add-btn" onclick="addBullet(' + note.id + ')" style="margin-top:8px">' + escHtml(t('addBullet')) + '</button>';
-      container.appendChild(div);
     }
+    wrapper.innerHTML = innerHtml;
+    container.appendChild(wrapper);
   }
 
   // ─── Decisions ────────────────────────────────────────────────────────────
@@ -907,10 +928,11 @@
   function renderDecisions() {
     var container = document.getElementById('decisions-container');
     container.innerHTML = '';
+    var wrapper = document.createElement('div');
+    wrapper.className = 'decision-item';
+    var rowsHtml = '';
     for (var i = 0; i < decisions.length; i++) {
-      var div = document.createElement('div');
-      div.className = 'decision-item';
-      div.innerHTML =
+      rowsHtml +=
         '<div class="bullet-row">' +
           '<textarea rows="1" placeholder="' + escAttr(t('phDecision')) + '"' +
             ' oninput="decisions[' + i + ']=this.value;autoResize(this);updatePreview()"' +
@@ -918,8 +940,9 @@
           '>' + escHtml(decisions[i]) + '</textarea>' +
           '<button type="button" class="btn btn-danger btn-small" onclick="removeDecision(' + i + ')" style="margin-top:2px">\u2715</button>' +
         '</div>';
-      container.appendChild(div);
     }
+    wrapper.innerHTML = rowsHtml;
+    container.appendChild(wrapper);
   }
 
   // ─── Actions ──────────────────────────────────────────────────────────────
@@ -954,11 +977,16 @@
   function renderActions() {
     var container = document.getElementById('actions-container');
     container.innerHTML = '';
+    if (actions.length === 0) return;
+    var wrapper = document.createElement('div');
+    wrapper.className = 'action-item';
+    var innerHtml = '';
     for (var i = 0; i < actions.length; i++) {
       var a = actions[i];
-      var div = document.createElement('div');
-      div.className = 'action-item';
-      div.innerHTML =
+      if (i > 0) {
+        innerHtml += '<hr style="border:none;border-top:1px solid var(--border);margin:14px 0;" />';
+      }
+      innerHtml +=
         '<div class="item-header">' +
           '<span class="item-index">' + escHtml(t('actionLabel')) + ' ' + (i + 1) + '</span>' +
           '<button type="button" class="btn btn-danger btn-small" onclick="removeAction(' + i + ')">' + escHtml(t('remove')) + '</button>' +
@@ -975,8 +1003,9 @@
             ' oninput="actions[' + i + '].assignee=this.value;updatePreview()"' +
             ' onkeydown="handleAssigneeTab(event,' + i + ')" />' +
         '</div>';
-      container.appendChild(div);
     }
+    wrapper.innerHTML = innerHtml;
+    container.appendChild(wrapper);
   }
 
   // ─── Markdown generation ──────────────────────────────────────────────────
@@ -1030,10 +1059,11 @@
     md += '- ' + displayDate + '\n\n';
 
     md += '## ' + t('mdParticipants') + '\n\n';
-    var filledParticipants = participants.filter(function(p) { return p.trim(); });
+    var filledParticipants = participants.filter(function(p) { return p.name.trim(); });
     if (filledParticipants.length > 0) {
       for (var pi = 0; pi < filledParticipants.length; pi++) {
-        md += '- ' + filledParticipants[pi].trim() + '\n';
+        var presenceMarker = filledParticipants[pi].present ? '\u2713' : '\u2717';
+        md += '- [' + presenceMarker + '] ' + filledParticipants[pi].name.trim() + '\n';
       }
     } else {
       md += '- \n';
@@ -1143,7 +1173,7 @@
 
     xml += '  <participants>\n';
     for (var pi = 0; pi < participants.length; pi++) {
-      xml += '    <participant>' + escXml(participants[pi]) + '</participant>\n';
+      xml += '    <participant present="' + (participants[pi].present ? 'true' : 'false') + '">' + escXml(participants[pi].name) + '</participant>\n';
     }
     xml += '  </participants>\n';
 
@@ -1256,9 +1286,11 @@
         participants = [];
         var partEls = xmlDoc.querySelectorAll('participants > participant');
         for (var pi = 0; pi < partEls.length; pi++) {
-          participants.push(partEls[pi].textContent || '');
+          var presAttr = partEls[pi].getAttribute('present');
+          var isPresent = presAttr !== 'false';
+          participants.push({ name: partEls[pi].textContent || '', present: isPresent });
         }
-        if (participants.length === 0) participants.push('');
+        if (participants.length === 0) participants.push({ name: '', present: true });
 
         // Notes
         notes = [];
