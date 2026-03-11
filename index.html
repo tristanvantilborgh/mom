@@ -113,18 +113,15 @@
     .btn-small { padding: 4px 10px; font-size: .75rem; }
 
     .layout {
-      display: grid;
-      grid-template-columns: 1fr 1fr;
-      gap: 0;
-      height: calc(100vh - 57px);
+      display: flex;
+      flex-direction: column;
     }
 
     .panel {
-      overflow-y: auto;
       padding: 24px;
     }
 
-    .panel-form { border-right: 1px solid var(--border); }
+    .panel-form { border-bottom: 1px solid var(--border); }
 
     .section {
       background: var(--surface);
@@ -304,10 +301,6 @@
 
     .toast.show { opacity: 1; transform: translateY(0); }
 
-    @media (max-width: 900px) {
-      .layout { grid-template-columns: 1fr; height: auto; }
-      .panel-form { border-right: none; border-bottom: 1px solid var(--border); }
-    }
   </style>
 </head>
 <body>
@@ -316,7 +309,7 @@
   <h1>MOM</h1>
   <span class="subtitle" id="ui-subtitle">Notulen van Vergadering</span>
   <div class="spacer"></div>
-  <span class="version-tag"><strong>Versie</strong> 2.1</span>
+  <span class="version-tag"><strong>Versie</strong> 2.4</span>
   <div class="lang-group">
     <button type="button" class="lang-btn active" data-lang="NL" onclick="setLang('NL')">NL</button>
     <button type="button" class="lang-btn" data-lang="FR" onclick="setLang('FR')">FR</button>
@@ -427,7 +420,7 @@
       docType: 'Doc Type',
       subject: 'Onderwerp',
       date: 'Datum',
-      participants: 'PARTICIPANTS',
+      participants: 'DEELNEMERS',
       addParticipant: '+ Deelnemer toevoegen',
       notes: 'Notities',
       addTopic: '+ Onderwerp toevoegen',
