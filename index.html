@@ -55,6 +55,11 @@
 
     header .spacer { flex: 1; }
 
+    .version-tag {
+      font-size: .8rem;
+      color: var(--muted);
+    }
+
     .lang-group {
       display: inline-flex;
       gap: 4px;
@@ -311,6 +316,7 @@
   <h1>MOM</h1>
   <span class="subtitle" id="ui-subtitle">Notulen van Vergadering</span>
   <div class="spacer"></div>
+  <span class="version-tag"><strong>Versie</strong> 2.0</span>
   <div class="lang-group">
     <button type="button" class="lang-btn active" data-lang="NL" onclick="setLang('NL')">NL</button>
     <button type="button" class="lang-btn" data-lang="FR" onclick="setLang('FR')">FR</button>
@@ -412,6 +418,7 @@
 <div class="toast" id="toast"></div>
 
 <script>
+  // ─── Translations ──────────────────────────────────────────────────────────
   var translations = {
     NL: {
       subtitle: 'Notulen van Vergadering',
@@ -451,11 +458,11 @@
       toastDownloaded: 'Gedownload: ',
       toastCopied: 'Gekopieerd naar klembord!',
       refLabel: 'Referentie: ',
-      mdDate: 'DATUM',
-      mdParticipants: 'DEELNEMERS',
-      mdContent: 'INHOUD',
-      mdNotes: 'NOTITIES',
-      mdFollowUp: 'OPVOLGING',
+      mdDate: 'Datum',
+      mdParticipants: 'Deelnemers',
+      mdContent: 'Inhoud',
+      mdNotes: 'Notities',
+      mdFollowUp: 'Opvolging',
       mdDecisions: 'Beslissingen',
       mdActionPoints: 'Actiepunten'
     },
@@ -497,11 +504,11 @@
       toastDownloaded: 'T\u00e9l\u00e9charg\u00e9: ',
       toastCopied: 'Copi\u00e9 dans le presse-papiers!',
       refLabel: 'R\u00e9f\u00e9rence: ',
-      mdDate: 'DATE',
-      mdParticipants: 'PARTICIPANTS',
-      mdContent: 'CONTENU',
-      mdNotes: 'NOTES',
-      mdFollowUp: 'SUIVI',
+      mdDate: 'Date',
+      mdParticipants: 'Participants',
+      mdContent: 'Contenu',
+      mdNotes: 'Notes',
+      mdFollowUp: 'Suivi',
       mdDecisions: 'D\u00e9cisions',
       mdActionPoints: "Points d'Action"
     },
@@ -543,11 +550,11 @@
       toastDownloaded: 'Downloaded: ',
       toastCopied: 'Copied to clipboard!',
       refLabel: 'Reference: ',
-      mdDate: 'DATE',
-      mdParticipants: 'PARTICIPANTS',
-      mdContent: 'CONTENT',
-      mdNotes: 'NOTES',
-      mdFollowUp: 'FOLLOW-UP',
+      mdDate: 'Date',
+      mdParticipants: 'Participants',
+      mdContent: 'Content',
+      mdNotes: 'Notes',
+      mdFollowUp: 'Follow-up',
       mdDecisions: 'Decisions',
       mdActionPoints: 'Action Points'
     }
@@ -600,20 +607,25 @@
     updatePreview();
   }
 
+  // ─── State ────────────────────────────────────────────────────────────────
   var notes = [];
   var decisions = [];
   var actions = [];
   var participants = [];
 
+  // ─── Init ─────────────────────────────────────────────────────────────────
   document.addEventListener('DOMContentLoaded', function() {
     document.getElementById('meeting-date').value = new Date().toISOString().split('T')[0];
     addParticipant(false);
     addNote();
     addDecision();
-    addAction();
+    actions.push({ text: 'Verslag opmaken en doorsturen', assignee: '' });
+    renderActions();
+    updatePreview();
     applyLang();
   });
 
+  // ─── Participants ─────────────────────────────────────────────────────────
   function addParticipant(focusLast) {
     participants.push('');
     renderParticipants();
@@ -658,6 +670,7 @@
     }
   }
 
+  // ─── Notes ────────────────────────────────────────────────────────────────
   function addNote() {
     var id = Date.now();
     notes.push({ id: id, subject: '', bullets: [''] });
@@ -725,6 +738,7 @@
     }
   }
 
+  // ─── Decisions ────────────────────────────────────────────────────────────
   function addDecision() {
     decisions.push('');
     renderDecisions();
@@ -754,6 +768,7 @@
     }
   }
 
+  // ─── Actions ──────────────────────────────────────────────────────────────
   function addAction() {
     actions.push({ text: '', assignee: '' });
     renderActions();
@@ -793,6 +808,7 @@
     }
   }
 
+  // ─── Markdown generation ──────────────────────────────────────────────────
   function buildReference() {
     var date = document.getElementById('meeting-date').value || '';
     var projectId = document.getElementById('project-id').value.trim();
@@ -809,20 +825,21 @@
 
   function buildMarkdown(isTemplate) {
     if (isTemplate) {
-      return '# [Subject]\n\n' +
+      return 'YYYYMMDD_ProjectID_MOM_Subject\n\n' +
+        '## [Subject]\n\n' +
         '## ' + t('mdDate') + '\n\n' +
-        '[Actual Date]\n\n' +
+        '- [Actual Date]\n\n' +
         '## ' + t('mdParticipants') + '\n\n' +
         '- [Name]\n\n' +
         '## ' + t('mdContent') + '\n\n' +
         '- [Topic Heading]\n\n' +
-        '## ' + t('mdNotes') + '\n\n' +
-        '### [Topic Heading]\n\n' +
+        '# ' + t('mdNotes') + '\n\n' +
+        '## [Topic Heading]\n\n' +
         '- Bullet points with text\n\n' +
-        '## ' + t('mdFollowUp') + '\n\n' +
-        '### ' + t('mdDecisions') + '\n\n' +
+        '# ' + t('mdFollowUp') + '\n\n' +
+        '## ' + t('mdDecisions') + '\n\n' +
         '- [Decision 1]\n\n' +
-        '### ' + t('mdActionPoints') + '\n\n' +
+        '## ' + t('mdActionPoints') + '\n\n' +
         '- [Action description] - [AssigneeName]\n';
     }
 
@@ -833,11 +850,14 @@
       ? new Date(date + 'T00:00:00').toLocaleDateString('en-GB', { day: '2-digit', month: 'long', year: 'numeric' })
       : '[Date]';
 
+    var ref = buildReference();
     var md = '';
 
-    md += '# ' + (subject || '[Subject]') + '\n\n';
+    md += ref + '\n\n';
+
+    md += '## ' + (subject || '[Subject]') + '\n\n';
     md += '## ' + t('mdDate') + '\n\n';
-    md += displayDate + '\n\n';
+    md += '- ' + displayDate + '\n\n';
 
     md += '## ' + t('mdParticipants') + '\n\n';
     var filledParticipants = participants.filter(function(p) { return p.trim(); });
@@ -861,12 +881,12 @@
       md += '- [Table of Contents]\n';
     }
 
-    md += '\n## ' + t('mdNotes') + '\n\n';
+    md += '\n# ' + t('mdNotes') + '\n\n';
 
     if (notes.length > 0) {
       for (var ni = 0; ni < notes.length; ni++) {
         var noteHeading = notes[ni].subject || (t('topicLabel') + ' ' + (ni + 1));
-        md += '### ' + noteHeading + '\n\n';
+        md += '## ' + noteHeading + '\n\n';
         var filledBullets = notes[ni].bullets.filter(function(b) { return b.trim(); });
         if (filledBullets.length > 0) {
           for (var bi = 0; bi < filledBullets.length; bi++) {
@@ -879,9 +899,9 @@
       }
     }
 
-    md += '## ' + t('mdFollowUp') + '\n\n';
+    md += '# ' + t('mdFollowUp') + '\n\n';
 
-    md += '### ' + t('mdDecisions') + '\n\n';
+    md += '## ' + t('mdDecisions') + '\n\n';
     var filledDecisions = decisions.filter(function(d) { return d.trim(); });
     if (filledDecisions.length > 0) {
       for (var di = 0; di < filledDecisions.length; di++) {
@@ -891,7 +911,7 @@
       md += '- \n';
     }
 
-    md += '\n### ' + t('mdActionPoints') + '\n\n';
+    md += '\n## ' + t('mdActionPoints') + '\n\n';
     var filledActions = actions.filter(function(a) { return a.text.trim(); });
     if (filledActions.length > 0) {
       for (var ai = 0; ai < filledActions.length; ai++) {
@@ -914,6 +934,7 @@
     return subject || projectId || hasNoteContent || hasDecisions || hasActions;
   }
 
+  // ─── Preview ──────────────────────────────────────────────────────────────
   function updatePreview() {
     var ref = buildReference();
     document.getElementById('ref-preview').textContent = t('refLabel') + ref;
@@ -921,6 +942,7 @@
     document.getElementById('preview-output').textContent = md;
   }
 
+  // ─── Download / Copy / Reset ───────────────────────────────────────────────
   function downloadMD() {
     var useTemplate = !hasData();
     var md = buildMarkdown(useTemplate);
