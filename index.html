@@ -316,7 +316,7 @@
   <h1>MOM</h1>
   <span class="subtitle" id="ui-subtitle">Notulen van Vergadering</span>
   <div class="spacer"></div>
-  <span class="version-tag"><strong>Versie</strong> 2.0</span>
+  <span class="version-tag"><strong>Versie</strong> 2.1</span>
   <div class="lang-group">
     <button type="button" class="lang-btn active" data-lang="NL" onclick="setLang('NL')">NL</button>
     <button type="button" class="lang-btn" data-lang="FR" onclick="setLang('FR')">FR</button>
@@ -448,10 +448,10 @@
       addBullet: '+ bullet',
       phProjectId: 'bijv. PR-01',
       phSubject: 'bijv. Kick-off Vergadering',
-      phParticipant: 'Naam…',
-      phNote: 'Notitie…',
-      phDecision: 'Beslissing…',
-      phAction: 'Beschrijf de actie…',
+      phParticipant: 'Naam\u2026',
+      phNote: 'Notitie\u2026',
+      phDecision: 'Beslissing\u2026',
+      phAction: 'Beschrijf de actie\u2026',
       phAssignee: 'Naam',
       confirmReset: 'Alle velden resetten?',
       toastTemplate: 'Sjabloon gedownload!',
@@ -467,8 +467,8 @@
       mdActionPoints: 'Actiepunten'
     },
     FR: {
-      subtitle: 'Compte Rendu de Réunion',
-      meetingInfo: 'Info Réunion',
+      subtitle: 'Compte Rendu de R\u00e9union',
+      meetingInfo: 'Info R\u00e9union',
       projectId: 'ID Projet',
       docType: 'Type Doc',
       subject: 'Sujet',
@@ -477,12 +477,12 @@
       addParticipant: '+ Ajouter Participant',
       notes: 'Notes',
       addTopic: '+ Ajouter Sujet',
-      decisions: 'Décisions',
+      decisions: 'D\u00e9cisions',
       add: '+ Ajouter',
       actionPoints: "Points d'Action",
-      reset: 'Réinitialiser',
-      download: 'Télécharger .txt',
-      previewTitle: 'Aperçu Markdown',
+      reset: 'R\u00e9initialiser',
+      download: 'T\u00e9l\u00e9charger .txt',
+      previewTitle: 'Aper\u00e7u Markdown',
       copy: 'Copier',
       subjectHeading: 'Sujet / Titre',
       bulletPoints: 'Points',
@@ -493,23 +493,23 @@
       remove: 'Supprimer',
       addBullet: '+ point',
       phProjectId: 'ex. PR-01',
-      phSubject: 'ex. Réunion de Lancement',
-      phParticipant: 'Nom…',
-      phNote: 'Note…',
-      phDecision: 'Décision…',
-      phAction: "Décrire l'action…",
+      phSubject: 'ex. R\u00e9union de Lancement',
+      phParticipant: 'Nom\u2026',
+      phNote: 'Note\u2026',
+      phDecision: 'D\u00e9cision\u2026',
+      phAction: "D\u00e9crire l'action\u2026",
       phAssignee: 'Nom',
-      confirmReset: 'Réinitialiser tous les champs?',
-      toastTemplate: 'Modèle téléchargé!',
-      toastDownloaded: 'Téléchargé: ',
-      toastCopied: 'Copié dans le presse-papiers!',
-      refLabel: 'Référence: ',
+      confirmReset: 'R\u00e9initialiser tous les champs?',
+      toastTemplate: 'Mod\u00e8le t\u00e9l\u00e9charg\u00e9!',
+      toastDownloaded: 'T\u00e9l\u00e9charg\u00e9: ',
+      toastCopied: 'Copi\u00e9 dans le presse-papiers!',
+      refLabel: 'R\u00e9f\u00e9rence: ',
       mdDate: 'Date',
       mdParticipants: 'Participants',
       mdContent: 'Contenu',
       mdNotes: 'Notes',
       mdFollowUp: 'Suivi',
-      mdDecisions: 'Décisions',
+      mdDecisions: 'D\u00e9cisions',
       mdActionPoints: "Points d'Action"
     },
     EN: {
@@ -540,10 +540,10 @@
       addBullet: '+ bullet',
       phProjectId: 'e.g. PR-01',
       phSubject: 'e.g. Kick-off Meeting',
-      phParticipant: 'Name…',
-      phNote: 'Note…',
-      phDecision: 'Decision…',
-      phAction: 'Describe the action…',
+      phParticipant: 'Name\u2026',
+      phNote: 'Note\u2026',
+      phDecision: 'Decision\u2026',
+      phAction: 'Describe the action\u2026',
       phAssignee: 'Name',
       confirmReset: 'Reset all fields?',
       toastTemplate: 'Template downloaded!',
@@ -664,7 +664,7 @@
           '<input type="text" value="' + escAttr(participants[i]) + '" placeholder="' + escAttr(t('phParticipant')) + '"' +
             ' oninput="participants[' + i + ']=this.value;updatePreview()"' +
             ' onkeydown="handleParticipantTab(event,' + i + ')" />' +
-          '<button type="button" class="btn btn-danger btn-small" onclick="removeParticipant(' + i + ')" style="margin-top:2px">✕</button>' +
+          '<button type="button" class="btn btn-danger btn-small" onclick="removeParticipant(' + i + ')" style="margin-top:2px">\u2715</button>' +
         '</div>';
       container.appendChild(div);
     }
@@ -733,7 +733,7 @@
               ' oninput="notes.find(function(n){return n.id===' + note.id + '}).bullets[' + bi + ']=this.value;autoResize(this);updatePreview()"' +
               ' onkeydown="handleBulletTab(event,' + note.id + ',' + bi + ')"' +
             '>' + escHtml(note.bullets[bi]) + '</textarea>' +
-            '<button type="button" class="btn btn-danger btn-small" onclick="removeBullet(' + note.id + ',' + bi + ')" style="margin-top:2px">✕</button>' +
+            '<button type="button" class="btn btn-danger btn-small" onclick="removeBullet(' + note.id + ',' + bi + ')" style="margin-top:2px">\u2715</button>' +
           '</div>';
       }
       div.innerHTML =
@@ -768,6 +768,21 @@
     updatePreview();
   }
 
+  function handleDecisionTab(event, idx) {
+    if (event.key === 'Tab') {
+      event.preventDefault();
+      decisions[idx] = event.target.value;
+      decisions.push('');
+      renderDecisions();
+      updatePreview();
+      setTimeout(function() {
+        var container = document.getElementById('decisions-container');
+        var textareas = container.querySelectorAll('textarea');
+        if (textareas.length > 0) textareas[textareas.length - 1].focus();
+      }, 10);
+    }
+  }
+
   function renderDecisions() {
     var container = document.getElementById('decisions-container');
     container.innerHTML = '';
@@ -778,8 +793,9 @@
         '<div class="bullet-row">' +
           '<textarea rows="1" placeholder="' + escAttr(t('phDecision')) + '"' +
             ' oninput="decisions[' + i + ']=this.value;autoResize(this);updatePreview()"' +
+            ' onkeydown="handleDecisionTab(event,' + i + ')"' +
           '>' + escHtml(decisions[i]) + '</textarea>' +
-          '<button type="button" class="btn btn-danger btn-small" onclick="removeDecision(' + i + ')" style="margin-top:2px">✕</button>' +
+          '<button type="button" class="btn btn-danger btn-small" onclick="removeDecision(' + i + ')" style="margin-top:2px">\u2715</button>' +
         '</div>';
       container.appendChild(div);
     }
@@ -796,6 +812,22 @@
     actions.splice(idx, 1);
     renderActions();
     updatePreview();
+  }
+
+  function handleAssigneeTab(event, idx) {
+    if (event.key === 'Tab') {
+      event.preventDefault();
+      actions[idx].assignee = event.target.value;
+      addAction();
+      setTimeout(function() {
+        var container = document.getElementById('actions-container');
+        var items = container.querySelectorAll('.action-item');
+        if (items.length > 0) {
+          var lastTextarea = items[items.length - 1].querySelector('textarea');
+          if (lastTextarea) lastTextarea.focus();
+        }
+      }, 10);
+    }
   }
 
   function renderActions() {
@@ -819,7 +851,8 @@
         '<div class="field">' +
           '<label>' + escHtml(t('assignee')) + '</label>' +
           '<input type="text" value="' + escAttr(a.assignee) + '" placeholder="' + escAttr(t('phAssignee')) + '"' +
-            ' oninput="actions[' + i + '].assignee=this.value;updatePreview()" />' +
+            ' oninput="actions[' + i + '].assignee=this.value;updatePreview()"' +
+            ' onkeydown="handleAssigneeTab(event,' + i + ')" />' +
         '</div>';
       container.appendChild(div);
     }
