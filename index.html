@@ -763,12 +763,14 @@
   function removeParticipant(idx) {
     participants.splice(idx, 1);
     renderParticipants();
+    renderActions();
     updatePreview();
   }
 
   function toggleParticipantPresence(idx) {
     participants[idx].present = !participants[idx].present;
     renderParticipants();
+    renderActions();
     updatePreview();
   }
 
@@ -797,7 +799,7 @@
           '</label>' +
           '<input type="text" value="' + escAttr(p.name) + '" placeholder="' + escAttr(t('phParticipant')) + '"' +
             ' style="' + (p.present ? '' : 'opacity:.5;text-decoration:line-through;') + '"' +
-            ' oninput="participants[' + i + '].name=this.value;updatePreview()"' +
+            ' oninput="participants[' + i + '].name=this.value;updatePreview();renderActions()"' +
             ' onkeydown="handleParticipantTab(event,' + i + ')" />' +
           '<button type="button" class="btn btn-danger btn-small" onclick="removeParticipant(' + i + ')" style="margin-top:0">\u2715</button>' +
         '</div>';
@@ -974,6 +976,17 @@
     }
   }
 
+  function buildAssigneeOptions(selectedValue) {
+    var opts = '<option value="">' + escHtml(t('phAssignee')) + '</option>';
+    for (var pi = 0; pi < participants.length; pi++) {
+      var name = participants[pi].name.trim();
+      if (!name) continue;
+      var selected = (name === selectedValue) ? ' selected' : '';
+      opts += '<option value="' + escAttr(name) + '"' + selected + '>' + escHtml(name) + '</option>';
+    }
+    return opts;
+  }
+
   function renderActions() {
     var container = document.getElementById('actions-container');
     container.innerHTML = '';
@@ -999,9 +1012,9 @@
         '</div>' +
         '<div class="field">' +
           '<label>' + escHtml(t('assignee')) + '</label>' +
-          '<input type="text" value="' + escAttr(a.assignee) + '" placeholder="' + escAttr(t('phAssignee')) + '"' +
-            ' oninput="actions[' + i + '].assignee=this.value;updatePreview()"' +
-            ' onkeydown="handleAssigneeTab(event,' + i + ')" />' +
+          '<select onchange="actions[' + i + '].assignee=this.value;updatePreview()">' +
+            buildAssigneeOptions(a.assignee) +
+          '</select>' +
         '</div>';
     }
     wrapper.innerHTML = innerHtml;
