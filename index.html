@@ -483,9 +483,14 @@
 
   <!-- RIGHT: Preview -->
   <div class="panel panel-preview">
-    <div class="preview-header">
-      <span class="preview-title" id="ui-preview-title">Markdown Preview</span>
-      <button type="button" class="btn btn-secondary btn-small" onclick="copyToClipboard()" style="background:#313244;color:#cdd6f4;border:1px solid #45475a;">
+    <div class="preview-header" onclick="togglePreview()" style="cursor:pointer;user-select:none;">
+      <div style="display:flex;align-items:center;gap:8px;">
+        <svg id="preview-chevron" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#cdd6f4" stroke-width="2.5" style="transition:transform .2s;transform:rotate(0deg);">
+          <polyline points="9 18 15 12 9 6"/>
+        </svg>
+        <span class="preview-title" id="ui-preview-title">Markdown Preview</span>
+      </div>
+      <button type="button" class="btn btn-secondary btn-small" onclick="event.stopPropagation();copyToClipboard()" style="background:#313244;color:#cdd6f4;border:1px solid #45475a;">
         <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
           <rect x="9" y="9" width="13" height="13" rx="2" ry="2"/>
           <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/>
@@ -493,8 +498,10 @@
         <span id="btn-copy-text">Kopieer</span>
       </button>
     </div>
-    <div class="ref-preview" id="ref-preview"></div>
-    <pre id="preview-output"></pre>
+    <div id="preview-body" style="display:none;">
+      <div class="ref-preview" id="ref-preview"></div>
+      <pre id="preview-output"></pre>
+    </div>
   </div>
 
 </div>
@@ -1151,6 +1158,16 @@
     var md = buildMarkdown(false);
     document.getElementById('preview-output').textContent = md;
     updateVersionBadge();
+  }
+
+  var previewOpen = false;
+
+  function togglePreview() {
+    previewOpen = !previewOpen;
+    var body = document.getElementById('preview-body');
+    var chevron = document.getElementById('preview-chevron');
+    body.style.display = previewOpen ? 'block' : 'none';
+    chevron.style.transform = previewOpen ? 'rotate(90deg)' : 'rotate(0deg)';
   }
 
   // ─── XML Helpers ──────────────────────────────────────────────────────────
