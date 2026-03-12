@@ -355,6 +355,69 @@
       margin: 0 4px;
     }
 
+    /* Drag and drop */
+    .drag-handle {
+      cursor: grab;
+      color: var(--muted);
+      display: flex;
+      align-items: center;
+      padding: 2px;
+      opacity: .45;
+      transition: opacity .15s;
+      flex-shrink: 0;
+      touch-action: none;
+    }
+
+    .drag-handle:hover {
+      opacity: 1;
+    }
+
+    .drag-handle:active {
+      cursor: grabbing;
+    }
+
+    .draggable-item {
+      transition: background .15s;
+    }
+
+    .draggable-item.dragging {
+      opacity: .4;
+    }
+
+    .draggable-item.drag-over {
+      border-top: 2px solid var(--accent);
+    }
+
+    .drag-topic {
+      padding: 10px 0;
+    }
+
+    .drag-topic.dragging {
+      opacity: .4;
+    }
+
+    .drag-topic.drag-over {
+      border-top: 2px solid var(--accent);
+    }
+
+    .note-topic-header {
+      cursor: default;
+    }
+
+    .note-topic-header .drag-handle {
+      cursor: grab;
+    }
+
+    .note-topic-block {
+      position: relative;
+    }
+
+    .bullet-drop-zone.drag-over {
+      min-height: 24px !important;
+      background: rgba(37,99,235,.08);
+      border: 2px dashed var(--accent);
+    }
+
   </style>
 </head>
 <body>
@@ -873,12 +936,18 @@
     for (var ni = 0; ni < notes.length; ni++) {
       var note = notes[ni];
       if (ni > 0) {
-        innerHtml += '<hr style="border:none;border-top:1px solid var(--border);margin:14px 0;" />';
+        innerHtml += '<hr style="border:none;border-top:1px solid var(--border);margin:4px 0;" />';
       }
       var bulletsHtml = '';
       for (var bi = 0; bi < note.bullets.length; bi++) {
         bulletsHtml +=
-          '<div class="bullet-row">' +
+          '<div class="bullet-row draggable-item" data-drag-type="bullet" draggable="true"' +
+            ' ondragstart="onDragStart(event,\'bullet\',' + bi + ',' + note.id + ')"' +
+            ' ondragover="onDragOver(event)"' +
+            ' ondragleave="onDragLeave(event)"' +
+            ' ondragend="onDragEnd(event)"' +
+            ' ondrop="onDrop(event,\'bullet\',' + bi + ',' + note.id + ')">' +
+            '<span class="drag-handle">' + dragHandleSvg + '</span>' +
             '<textarea rows="1" placeholder="' + escAttr(t('phNote')) + '"' +
               ' oninput="notes.find(function(n){return n.id===' + note.id + '}).bullets[' + bi + ']=this.value;autoResize(this);updatePreview()"' +
               ' onkeydown="handleBulletTab(event,' + note.id + ',' + bi + ')"' +
@@ -887,20 +956,37 @@
           '</div>';
       }
       innerHtml +=
-        '<div class="item-header">' +
-          '<span class="item-index">' + escHtml(t('topicLabel')) + ' ' + (ni + 1) + '</span>' +
+        '<div class="note-topic-block drag-topic" data-drag-type="note" data-note-index="' + ni + '"' +
+          ' ondragover="onDragOver(event)"' +
+          ' ondragleave="onDragLeave(event)"' +
+          ' ondrop="onDrop(event,\'note\',' + ni + ')">' +
+        '<div class="note-topic-header" draggable="true"' +
+          ' ondragstart="onDragStart(event,\'note\',' + ni + ')"' +
+          ' ondragend="onDragEnd(event)">' +
+        '<div class="item-header" style="margin-bottom:0;">' +
+          '<div style="display:flex;align-items:center;gap:6px;">' +
+            '<span class="drag-handle">' + dragHandleSvg + '</span>' +
+            '<span class="item-index">' + escHtml(t('topicLabel')) + ' ' + (ni + 1) + '</span>' +
+          '</div>' +
           '<button type="button" class="btn btn-danger btn-small" onclick="removeNote(' + note.id + ')">' + escHtml(t('remove')) + '</button>' +
         '</div>' +
-        '<div class="field">' +
+        '<div class="field" style="margin-top:10px;">' +
           '<label>' + escHtml(t('subjectHeading')) + '</label>' +
           '<input type="text" value="' + escAttr(note.subject) + '" placeholder="e.g. Project Status"' +
             ' oninput="notes.find(function(n){return n.id===' + note.id + '}).subject=this.value;updatePreview()" />' +
         '</div>' +
+        '</div>' +
         '<label>' + escHtml(t('bulletPoints')) + '</label>' +
         '<div class="bullet-list" id="bullets-' + note.id + '">' +
           bulletsHtml +
+          '<div class="bullet-drop-zone draggable-item" data-drag-type="bullet"' +
+            ' ondragover="onDragOver(event)"' +
+            ' ondragleave="onDragLeave(event)"' +
+            ' ondrop="onDrop(event,\'bullet\',' + note.bullets.length + ',' + note.id + ')"' +
+            ' style="min-height:8px;border-radius:var(--radius);transition:all .15s;"></div>' +
         '</div>' +
-        '<button type="button" class="add-btn" onclick="addBullet(' + note.id + ')" style="margin-top:8px">' + escHtml(t('addBullet')) + '</button>';
+        '<button type="button" class="add-btn" onclick="addBullet(' + note.id + ')" style="margin-top:8px">' + escHtml(t('addBullet')) + '</button>' +
+        '</div>';
     }
     wrapper.innerHTML = innerHtml;
     container.appendChild(wrapper);
@@ -942,7 +1028,13 @@
     var rowsHtml = '';
     for (var i = 0; i < decisions.length; i++) {
       rowsHtml +=
-        '<div class="bullet-row">' +
+        '<div class="bullet-row draggable-item" data-drag-type="decision" draggable="true"' +
+          ' ondragstart="onDragStart(event,\'decision\',' + i + ')"' +
+          ' ondragover="onDragOver(event)"' +
+          ' ondragleave="onDragLeave(event)"' +
+          ' ondragend="onDragEnd(event)"' +
+          ' ondrop="onDrop(event,\'decision\',' + i + ')">' +
+          '<span class="drag-handle">' + dragHandleSvg + '</span>' +
           '<textarea rows="1" placeholder="' + escAttr(t('phDecision')) + '"' +
             ' oninput="decisions[' + i + ']=this.value;autoResize(this);updatePreview()"' +
             ' onkeydown="handleDecisionTab(event,' + i + ')"' +
@@ -1007,8 +1099,17 @@
         innerHtml += '<hr style="border:none;border-top:1px solid var(--border);margin:14px 0;" />';
       }
       innerHtml +=
+        '<div class="draggable-item" data-drag-type="action" draggable="true" style="padding:4px 0;"' +
+          ' ondragstart="onDragStart(event,\'action\',' + i + ')"' +
+          ' ondragover="onDragOver(event)"' +
+          ' ondragleave="onDragLeave(event)"' +
+          ' ondragend="onDragEnd(event)"' +
+          ' ondrop="onDrop(event,\'action\',' + i + ')">' +
         '<div class="item-header">' +
-          '<span class="item-index">' + escHtml(t('actionLabel')) + ' ' + (i + 1) + '</span>' +
+          '<div style="display:flex;align-items:center;gap:6px;">' +
+            '<span class="drag-handle">' + dragHandleSvg + '</span>' +
+            '<span class="item-index">' + escHtml(t('actionLabel')) + ' ' + (i + 1) + '</span>' +
+          '</div>' +
           '<button type="button" class="btn btn-danger btn-small" onclick="removeAction(' + i + ')">' + escHtml(t('remove')) + '</button>' +
         '</div>' +
         '<div class="field">' +
@@ -1022,6 +1123,7 @@
           '<select onchange="actions[' + i + '].assignee=this.value;updatePreview()">' +
             buildAssigneeOptions(a.assignee) +
           '</select>' +
+        '</div>' +
         '</div>';
     }
     wrapper.innerHTML = innerHtml;
@@ -1454,6 +1556,105 @@
 
   function escAttr(str) {
     return str.replace(/"/g, '&quot;').replace(/'/g, '&#39;');
+  }
+
+  // ─── Drag & Drop Engine ───────────────────────────────────────────────────
+  var dragSrcIndex = null;
+  var dragType = null;
+  var dragNoteId = null;
+
+  var dragHandleSvg = '<svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><circle cx="9" cy="5" r="1.5"/><circle cx="15" cy="5" r="1.5"/><circle cx="9" cy="12" r="1.5"/><circle cx="15" cy="12" r="1.5"/><circle cx="9" cy="19" r="1.5"/><circle cx="15" cy="19" r="1.5"/></svg>';
+
+  function onDragStart(e, type, index, noteId) {
+    e.stopPropagation();
+    dragSrcIndex = index;
+    dragType = type;
+    dragNoteId = noteId || null;
+    e.dataTransfer.effectAllowed = 'move';
+    e.dataTransfer.setData('text/plain', index);
+    setTimeout(function() {
+      var el = e.target.closest('.draggable-item, .drag-topic');
+      if (el) el.classList.add('dragging');
+    }, 0);
+  }
+
+  function onDragOver(e) {
+    e.preventDefault();
+    e.stopPropagation();
+    e.dataTransfer.dropEffect = 'move';
+    var item = e.target.closest('.draggable-item, .drag-topic');
+    if (item) {
+      // Only highlight if same type
+      var itemType = item.getAttribute('data-drag-type');
+      if (itemType === dragType) {
+        item.classList.add('drag-over');
+      }
+    }
+  }
+
+  function onDragLeave(e) {
+    e.stopPropagation();
+    var item = e.target.closest('.draggable-item, .drag-topic');
+    if (item) item.classList.remove('drag-over');
+  }
+
+  function onDragEnd(e) {
+    e.stopPropagation();
+    var items = document.querySelectorAll('.dragging, .drag-over');
+    for (var i = 0; i < items.length; i++) {
+      items[i].classList.remove('dragging', 'drag-over');
+    }
+    dragSrcIndex = null;
+    dragType = null;
+    dragNoteId = null;
+  }
+
+  function onDrop(e, type, targetIndex, noteId) {
+    e.preventDefault();
+    e.stopPropagation();
+    var item = e.target.closest('.draggable-item, .drag-topic');
+    if (item) item.classList.remove('drag-over');
+
+    if (dragType !== type) return;
+    if (dragSrcIndex === null) return;
+
+    if (type === 'bullet') {
+      var srcNote = notes.find(function(n) { return n.id === dragNoteId; });
+      var tgtNote = notes.find(function(n) { return n.id === noteId; });
+      if (!srcNote || !tgtNote) return;
+      // Same note, same index — nothing to do
+      if (dragNoteId === noteId && dragSrcIndex === targetIndex) return;
+      // Remove from source
+      var moved = srcNote.bullets.splice(dragSrcIndex, 1)[0];
+      // If source note has no bullets left, add an empty one
+      if (srcNote.bullets.length === 0) srcNote.bullets.push('');
+      // Insert into target
+      tgtNote.bullets.splice(targetIndex, 0, moved);
+      renderNotes();
+      updatePreview();
+    } else if (type === 'note') {
+      if (dragSrcIndex === targetIndex) return;
+      var moved = notes.splice(dragSrcIndex, 1)[0];
+      notes.splice(targetIndex, 0, moved);
+      renderNotes();
+      updatePreview();
+    } else if (type === 'decision') {
+      if (dragSrcIndex === targetIndex) return;
+      var moved = decisions.splice(dragSrcIndex, 1)[0];
+      decisions.splice(targetIndex, 0, moved);
+      renderDecisions();
+      updatePreview();
+    } else if (type === 'action') {
+      if (dragSrcIndex === targetIndex) return;
+      var moved = actions.splice(dragSrcIndex, 1)[0];
+      actions.splice(targetIndex, 0, moved);
+      renderActions();
+      updatePreview();
+    }
+
+    dragSrcIndex = null;
+    dragType = null;
+    dragNoteId = null;
   }
 </script>
 </body>
