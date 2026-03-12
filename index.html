@@ -373,7 +373,7 @@
     <span id="file-version-label"></span>
   </span>
 
-  <span class="version-tag"><strong>Versie</strong> 3.0</span>
+  <span class="version-tag"><strong>Versie</strong> 3.1</span>
 
   <div class="lang-group">
     <button type="button" class="lang-btn active" data-lang="NL" onclick="setLang('NL')">NL</button>
@@ -427,7 +427,11 @@
       <div class="section-header">
         <span class="section-title" id="ui-meeting-info">Vergaderinfo</span>
       </div>
-      <div class="row">
+      <div class="field">
+        <label id="lbl-subject">Onderwerp</label>
+        <input type="text" id="subject" placeholder="bijv. Kick-off Vergadering" oninput="updatePreview()" />
+      </div>
+      <div style="display:grid;grid-template-columns:1fr 1fr 2fr;gap:12px;">
         <div class="field">
           <label id="lbl-project-id">Project ID</label>
           <input type="text" id="project-id" placeholder="bijv. PR-01" oninput="updatePreview()" />
@@ -436,14 +440,10 @@
           <label id="lbl-doc-type">Doc Type</label>
           <input type="text" id="doc-type" placeholder="e.g. MOM" value="MOM" oninput="updatePreview()" />
         </div>
-      </div>
-      <div class="field">
-        <label id="lbl-subject">Onderwerp</label>
-        <input type="text" id="subject" placeholder="bijv. Kick-off Vergadering" oninput="updatePreview()" />
-      </div>
-      <div class="field">
-        <label id="lbl-date">Datum</label>
-        <input type="date" id="meeting-date" oninput="updatePreview()" />
+        <div class="field">
+          <label id="lbl-date">Datum</label>
+          <input type="date" id="meeting-date" oninput="updatePreview()" />
+        </div>
       </div>
       <div class="section-header" style="margin-top:14px;margin-bottom:8px;">
         <span class="section-title" id="ui-participants-title" style="font-size:.8rem;">PARTICIPANTS</span>
